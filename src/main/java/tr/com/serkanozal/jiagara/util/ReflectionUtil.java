@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
  */
 public class ReflectionUtil {
 
-	private static final Logger logger = Logger.getLogger(ReflectionUtil.class);
+	private static final Logger logger = LogUtil.getLogger();
 	
 	private ReflectionUtil() {
 		
