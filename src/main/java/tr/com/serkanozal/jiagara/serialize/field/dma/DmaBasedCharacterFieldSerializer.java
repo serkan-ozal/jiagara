@@ -14,19 +14,26 @@
  * limitations under the License.
  */
 
+package tr.com.serkanozal.jiagara.serialize.field.dma;
 
-package tr.com.serkanozal.jiagara.service.serializer;
+import java.lang.reflect.Field;
 
-import tr.com.serkanozal.jiagara.serializer.Serializer;
+import tr.com.serkanozal.jiagara.serialize.field.AbstractFieldSerializer;
+import tr.com.serkanozal.jiagara.serialize.writer.dma.DirectMemoryAccessBasedOutputWriter;
 
 /**
  * @author Serkan ÖZAL
  */
-public class SerializerServiceImpl implements SerializerService {
-
+public class DmaBasedCharacterFieldSerializer extends AbstractFieldSerializer<DirectMemoryAccessBasedOutputWriter> 
+		implements DirectMemoryAccessBasedFieldSerializer {
+		
+	public DmaBasedCharacterFieldSerializer(Field field) {
+		super(field);
+	}
+	
 	@Override
-	public <T> Serializer<T> getSerializer(Class<T> clazz) {
-		return null;
+	public void serializeField(DirectMemoryAccessBasedOutputWriter outputWriter) {
+	
 	}
 
 }

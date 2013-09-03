@@ -14,19 +14,28 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.deserializer;
+package tr.com.serkanozal.jiagara.util;
 
 /**
  * @author Serkan ÖZAL
  */
-public class DeserializerFactory {
+public class StringUtil {
 
-	private DeserializerFactory() {
+	public static final String ARGUMENT_SIGNER = "$";
+	
+	private StringUtil() {
 		
 	}
 	
-	public static <T> Deserializer<T> createDeserializer(Class<T> clazz) {
-		return null;
+	public static String bindArguments(String str, Object ... args) {
+		if (args != null) {
+			for (int i = 0; i < args.length; i++) {
+				Object arg = args[i];
+				String argStr = (arg == null) ? "null" : arg.toString();
+				str = str.replace(ARGUMENT_SIGNER + i , argStr);
+			}
+		}
+		return str;
 	}
 	
 }

@@ -14,17 +14,26 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.deserializer;
+package tr.com.serkanozal.jiagara.serialize.field.dma;
 
-import java.io.InputStream;
+import java.lang.reflect.Field;
 
-import tr.com.serkanozal.jiagara.exception.DeserializationException;
+import tr.com.serkanozal.jiagara.serialize.field.AbstractFieldSerializer;
+import tr.com.serkanozal.jiagara.serialize.writer.dma.DirectMemoryAccessBasedOutputWriter;
 
 /**
  * @author Serkan ÖZAL
  */
-public interface Deserializer<T> {
+public class DmaBasedByteFieldSerializer extends AbstractFieldSerializer<DirectMemoryAccessBasedOutputWriter> 
+		implements DirectMemoryAccessBasedFieldSerializer {
 
-	T deserialize(InputStream is) throws DeserializationException;
+	public DmaBasedByteFieldSerializer(Field field) {
+		super(field);
+	}
 	
+	@Override
+	public void serializeField(DirectMemoryAccessBasedOutputWriter outputWriter) {
+	
+	}
+
 }

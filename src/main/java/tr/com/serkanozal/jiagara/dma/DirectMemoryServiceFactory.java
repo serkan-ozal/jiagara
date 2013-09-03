@@ -14,15 +14,25 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.service.serializer;
-
-import tr.com.serkanozal.jiagara.serializer.Serializer;
+package tr.com.serkanozal.jiagara.dma;
 
 /**
  * @author Serkan ÖZAL
  */
-public interface SerializerService {
+public class DirectMemoryServiceFactory {
 
-	<T> Serializer<T> getSerializer(Class<T> clazz);
+	private static DirectMemoryService directMemoryService = new DirectMemoryServiceImpl();
+	
+	private DirectMemoryServiceFactory() {
+		
+	}
+	
+	public static DirectMemoryService getDirectMemoryService() {
+		return directMemoryService;
+	}
+	
+	public static void setDirectMemoryService(DirectMemoryService directMemoryService) {
+		DirectMemoryServiceFactory.directMemoryService = directMemoryService;
+	}
 	
 }

@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.service.serializer;
+package tr.com.serkanozal.jiagara.serialize.field.dma;
+
+import java.lang.reflect.Field;
+
+import tr.com.serkanozal.jiagara.serialize.field.AbstractFieldSerializer;
+import tr.com.serkanozal.jiagara.serialize.writer.dma.DirectMemoryAccessBasedOutputWriter;
 
 /**
  * @author Serkan ÖZAL
  */
-public class SerializerServiceFactory {
-
-	private static SerializerService serializerService = new SerializerServiceImpl();
-	
-	private SerializerServiceFactory() {
+public class DmaBasedStringFieldSerializer extends AbstractFieldSerializer<DirectMemoryAccessBasedOutputWriter> 
+		implements DirectMemoryAccessBasedFieldSerializer {
 		
+	public DmaBasedStringFieldSerializer(Field field) {
+		super(field);
 	}
 	
-	public static SerializerService getSerializerService() {
-		return serializerService;
-	}
+	@Override
+	public void serializeField(DirectMemoryAccessBasedOutputWriter outputWriter) {
 	
-	public static void setSerializerService(SerializerService serializerService) {
-		SerializerServiceFactory.serializerService = serializerService;
 	}
-	
+
 }

@@ -14,15 +14,25 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.service.deserializer;
-
-import tr.com.serkanozal.jiagara.deserializer.Deserializer;
+package tr.com.serkanozal.jiagara.service.deserialize;
 
 /**
  * @author Serkan ÖZAL
  */
-public interface DeserializerService {
+public class DeserializerServiceFactory {
 
-	<T> Deserializer<T> getDeserializer(Class<T> clazz);
+	private static DeserializerService deserializerService = new DeserializerServiceImpl();
+	
+	private DeserializerServiceFactory() {
+		
+	}
+	
+	public static DeserializerService getDeserializerService() {
+		return deserializerService;
+	}
+	
+	public static void setSerializerService(DeserializerService deserializerService) {
+		DeserializerServiceFactory.deserializerService = deserializerService;
+	}
 	
 }

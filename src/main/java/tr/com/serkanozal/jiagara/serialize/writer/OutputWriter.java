@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-
-package tr.com.serkanozal.jiagara.service.deserializer;
-
-import tr.com.serkanozal.jiagara.deserializer.Deserializer;
+package tr.com.serkanozal.jiagara.serialize.writer;
 
 /**
  * @author Serkan ÖZAL
  */
-public class DeserializerServiceImpl implements DeserializerService {
+public interface OutputWriter {
 
-	@Override
-	public <T> Deserializer<T> getDeserializer(Class<T> clazz) {
-		return null;
-	}
-
+	void writeByte(byte value);
+	void writeBoolean(boolean value);
+	void writeCharacter(char value);
+	void writeShort(short value);
+	void writeInteger(int value);
+	void writeFloat(float value);
+	void writeLong(long value);
+	void writeDouble(double value);
+	void writeString(String value);
+	void writeBytes(byte[] value);
+	
 }

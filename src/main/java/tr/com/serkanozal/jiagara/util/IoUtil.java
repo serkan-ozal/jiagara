@@ -17,7 +17,9 @@
 package tr.com.serkanozal.jiagara.util;
 
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
@@ -29,8 +31,25 @@ public class IoUtil {
 
 	private static final Logger logger = LogUtil.getLogger();
 	
+	private static Method FILE_DISPATCHER_WRITE_METHOD;
+	
+	static {
+		init();
+	}
+	
 	private IoUtil() {
 		
+	}
+	
+	private static void init() {
+		try {
+			Class<?> cls = Class.forName("sun.nio.ch.FileDispatcher");
+			FILE_DISPATCHER_WRITE_METHOD = cls.getDeclaredMethod("write", new Class[] {FileDescriptor.class, long.class, int.class});
+			FILE_DISPATCHER_WRITE_METHOD.setAccessible(true);
+		}
+		catch (Throwable t) {
+			logger.error("Error occured while initializing IoUtil", t);
+		}
 	}
 	
 	public static InputStream getResourceAsStream(String resourcePath) {
@@ -75,6 +94,15 @@ public class IoUtil {
 			logger.error("Unable to get caller class", e);
 			return null;
 		}
+	}
+	
+	public static void writeDirectly(FileDescriptor fd, long startAddress, int length) {
+		try {
+			FILE_DISPATCHER_WRITE_METHOD.invoke(null, new Object[] { fd, startAddress, length });
+		} 
+		catch (Throwable t) {
+			logger.error("Error occured while writing to file descriptor " + fd, t);
+		} 
 	}
 	
 }
