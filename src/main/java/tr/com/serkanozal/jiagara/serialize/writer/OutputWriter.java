@@ -21,15 +21,28 @@ package tr.com.serkanozal.jiagara.serialize.writer;
  */
 public interface OutputWriter {
 
-	void writeByte(byte value);
-	void writeBoolean(boolean value);
-	void writeCharacter(char value);
-	void writeShort(short value);
-	void writeInteger(int value);
-	void writeFloat(float value);
-	void writeLong(long value);
-	void writeDouble(double value);
-	void writeString(String value);
-	void writeBytes(byte[] value);
+	void writeNull();
+	
+	void write(byte value);
+	void write(boolean value);
+	void write(char value);
+	void write(short value);
+	void write(int value);
+	void write(float value);
+	void write(long value);
+	void write(double value);
+	void write(String value);
+	void write(Enum<?> value);
+	void write(Object value);
+	
+	void write(byte[] array);
+	void write(boolean[] array);
+	void write(char[] array);
+	void write(short[] array);
+	void write(int[] array);
+	void write(float[] array);
+	void write(long[] array);
+	void write(double[] array);
+	void write(Object[] array);
 	
 }

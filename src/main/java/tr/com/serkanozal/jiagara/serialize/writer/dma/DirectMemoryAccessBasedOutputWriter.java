@@ -26,7 +26,7 @@ public interface DirectMemoryAccessBasedOutputWriter extends BufferedOutputWrite
 
 	long getAddress();
 	
-	void writeByteFrom(Object obj, long offset);
+	void writeByte(Object obj, long offset);
 	void writeBoolean(Object obj, long offset);
 	void writeCharacter(Object obj, long offset);
 	void writeShort(Object obj, long offset);
@@ -35,9 +35,20 @@ public interface DirectMemoryAccessBasedOutputWriter extends BufferedOutputWrite
 	void writeLong(Object obj, long offset);
 	void writeDouble(Object obj, long offset);
 	void writeString(Object obj, long offset);
-	void writeBytes(Object obj, long offset);
+	void writeEnum(Object obj, long offset);
+	void writeObject(Object obj, long offset);
 	
-	void writeByteFrom(long address);
+	void writeByteArray(Object obj, long offset);
+	void writeBooleanArray(Object obj, long offset);
+	void writeCharacterArray(Object obj, long offset);
+	void writeShortArray(Object obj, long offset);
+	void writeIntegerArray(Object obj, long offset);
+	void writeFloatArray(Object obj, long offset);
+	void writeLongArray(Object obj, long offset);
+	void writeDoubleArray(Object obj, long offset);
+	void writeObjectArray(Object obj, long offset);
+	
+	void writeByte(long address);
 	void writeBoolean(long address);
 	void writeCharacter(long address);
 	void writeShort(long address);
@@ -46,6 +57,17 @@ public interface DirectMemoryAccessBasedOutputWriter extends BufferedOutputWrite
 	void writeLong(long address);
 	void writeDouble(long address);
 	void writeString(long address);
-	void writeBytes(long address);
+	void writeEnum(long address);
+	void writeObject(long address);
+	
+	void writeByteArray(long address);
+	void writeBooleanArray(long address);
+	void writeCharacterArray(long address);
+	void writeShortArray(long address);
+	void writeIntegerArray(long address);
+	void writeFloatArray(long address);
+	void writeLongArray(long address);
+	void writeDoubleArray(long address);
+	void writeObjectArray(long address);
 	
 }

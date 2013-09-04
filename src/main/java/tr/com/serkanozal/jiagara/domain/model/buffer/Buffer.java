@@ -101,7 +101,21 @@ public class Buffer {
 		this.index = index;
 	}
 	
-	public boolean has(int size) {
+	public boolean checkCapacity(int size) {
+		return index + size < buffer.length;
+	}
+	
+	public boolean checkCapacity(long size) {
+		return index + size < buffer.length;
+	}
+	
+	public boolean checkCapacitiyAndFlushIfNeeded(int size) {
+		// TODO Implement flush trigger if needed
+		return index + size < buffer.length;
+	}
+	
+	public boolean checkCapacitiyAndFlushIfNeeded(long size) {
+		// TODO Implement flush trigger if needed
 		return index + size < buffer.length;
 	}
 	
