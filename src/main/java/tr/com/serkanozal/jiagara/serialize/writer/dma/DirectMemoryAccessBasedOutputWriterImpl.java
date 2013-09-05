@@ -16,6 +16,8 @@
 
 package tr.com.serkanozal.jiagara.serialize.writer.dma;
 
+import java.io.OutputStream;
+
 import tr.com.serkanozal.jiagara.domain.builder.buffer.dma.DirectMemoryAccessBasedBufferBuilder;
 import tr.com.serkanozal.jiagara.domain.model.buffer.dma.DirectMemoryAccessBasedBuffer;
 import tr.com.serkanozal.jiagara.serialize.writer.AbstractBufferedOutputWriter;
@@ -48,11 +50,13 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	private int longArrayScale;
 	private int doubleArrayBase;
 	private int doubleArrayScale;
+	@SuppressWarnings("unused")
 	private int objectArrayBase;
+	@SuppressWarnings("unused")
 	private int objectArrayScale;
 	
-	public DirectMemoryAccessBasedOutputWriterImpl() {
-		super(new DirectMemoryAccessBasedBufferBuilder().build());
+	public DirectMemoryAccessBasedOutputWriterImpl(OutputStream os) {
+		super(os, new DirectMemoryAccessBasedBufferBuilder().build());
 		//////////////////////////////////////////////////////////////////
 		startAddress = JvmUtil.getArrayBaseAddress(bufferArray, byte.class);
 		unsafe = JvmUtil.getUnsafe();
@@ -93,58 +97,50 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 
 	@Override
 	public void writeByte(Object obj, long offset) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.BYTE_SIZE)) {
-			unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.BYTE_SIZE);
-		}
+		buffer.checkCapacitiyAndHandle(JvmUtil.BYTE_SIZE);
+		unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.BYTE_SIZE);
 	}
 
 	@Override
 	public void writeBoolean(Object obj, long offset) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.BOOLEAN_SIZE)) {
-			unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.BOOLEAN_SIZE);
-		}	
+		buffer.checkCapacitiyAndHandle(JvmUtil.BOOLEAN_SIZE);
+		unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.BOOLEAN_SIZE);
 	}
 
 	@Override
 	public void writeCharacter(Object obj, long offset) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.CHAR_SIZE)) {
-			unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.CHAR_SIZE);
-		}
+		buffer.checkCapacitiyAndHandle(JvmUtil.CHAR_SIZE);
+		unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.CHAR_SIZE);
 	}
 
 	@Override
 	public void writeShort(Object obj, long offset) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.SHORT_SIZE)) {
-			unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.SHORT_SIZE);
-		}
+		buffer.checkCapacitiyAndHandle(JvmUtil.SHORT_SIZE);
+		unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.SHORT_SIZE);
 	}
 
 	@Override
 	public void writeInteger(Object obj, long offset) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.INT_SIZE)) {
-			unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.INT_SIZE);
-		}	
+		buffer.checkCapacitiyAndHandle(JvmUtil.INT_SIZE);
+		unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.INT_SIZE);
 	}
 
 	@Override
 	public void writeFloat(Object obj, long offset) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.FLOAT_SIZE)) {
-			unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.FLOAT_SIZE);
-		}	
+		buffer.checkCapacitiyAndHandle(JvmUtil.FLOAT_SIZE);
+		unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.FLOAT_SIZE);
 	}
 
 	@Override
 	public void writeLong(Object obj, long offset) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.LONG_SIZE)) {
-			unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.LONG_SIZE);
-		}
+		buffer.checkCapacitiyAndHandle(JvmUtil.LONG_SIZE);
+		unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.LONG_SIZE);
 	}
 
 	@Override
 	public void writeDouble(Object obj, long offset) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.DOUBLE_SIZE)) {
-			unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.DOUBLE_SIZE);
-		}	
+		buffer.checkCapacitiyAndHandle(JvmUtil.DOUBLE_SIZE);
+		unsafe.copyMemory(obj, offset, bufferArray, buffer.getIndex(), JvmUtil.DOUBLE_SIZE);
 	}
 
 	@Override
@@ -169,17 +165,15 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
 				byte[] array1 = (byte[])unsafe.getObject(obj, offset);
 				long size1 = byteArrayBase + (array1.length * byteArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size1)) {
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-				}	
+				buffer.checkCapacitiyAndHandle(size1);
+				unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
 				break;
 			case JvmUtil.ADDRESSING_8_BYTE:
 				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
 				byte[] array2 = (byte[])unsafe.getObject(obj, offset);
 				long size2 = byteArrayBase + (array2.length * byteArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size2)) {
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-				}	
+				buffer.checkCapacitiyAndHandle(size2);
+				unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
 				break;
 			default:
 				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
@@ -193,17 +187,15 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
 				boolean[] array1 = (boolean[])unsafe.getObject(obj, offset);
 				long size1 = booleanArrayBase + (array1.length * booleanArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size1)) {
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-				}	
+				buffer.checkCapacitiyAndHandle(size1);
+				unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
 				break;
 			case JvmUtil.ADDRESSING_8_BYTE:
 				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
 				boolean[] array2 = (boolean[])unsafe.getObject(obj, offset);
 				long size2 =  booleanArrayBase + (array2.length * booleanArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size2)) {
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-				}
+				buffer.checkCapacitiyAndHandle(size2);
+				unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
 				break;
 			default:
 				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
@@ -217,17 +209,15 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
 				char[] array1 = (char[])unsafe.getObject(obj, offset);
 				long size1 = charArrayBase + (array1.length * charArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size1)) {
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-				}	
+				buffer.checkCapacitiyAndHandle(size1);
+				unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
 				break;
 			case JvmUtil.ADDRESSING_8_BYTE:
 				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
 				char[] array2 = (char[])unsafe.getObject(obj, offset);
 				long size2 = charArrayBase + (array2.length * charArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size2)) {
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-				}	
+				buffer.checkCapacitiyAndHandle(size2);
+				unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
 				break;
 			default:
 				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
@@ -241,17 +231,15 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
 				short[] array1 = (short[])unsafe.getObject(obj, offset);
 				long size1 = shortArrayBase + (array1.length * shortArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size1)) {
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-				}	
+				buffer.checkCapacitiyAndHandle(size1);
+				unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
 				break;
 			case JvmUtil.ADDRESSING_8_BYTE:
 				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
 				short[] array2 = (short[])unsafe.getObject(obj, offset);
 				long size2 = shortArrayBase + (array2.length * shortArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size2)) {
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-				}	
+				buffer.checkCapacitiyAndHandle(size2);
+				unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
 				break;
 			default:
 				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
@@ -265,17 +253,15 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
 				int[] array1 = (int[])unsafe.getObject(obj, offset);
 				long size1 = intArrayBase + (array1.length * intArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size1)) {
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-				}	
+				buffer.checkCapacitiyAndHandle(size1);
+				unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
 				break;
 			case JvmUtil.ADDRESSING_8_BYTE:
 				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
 				int[] array2 = (int[])unsafe.getObject(obj, offset);
 				long size2 = intArrayBase + (array2.length * intArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size2)) {
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-				}
+				buffer.checkCapacitiyAndHandle(size2);
+				unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
 				break;
 			default:
 				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
@@ -289,17 +275,15 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
 				float[] array1 = (float[])unsafe.getObject(obj, offset);
 				long size1 = floatArrayBase + (array1.length * floatArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size1)) {
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-				}	
+				buffer.checkCapacitiyAndHandle(size1);
+				unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
 				break;
 			case JvmUtil.ADDRESSING_8_BYTE:
 				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
 				float[] array2 = (float[])unsafe.getObject(obj, offset);
 				long size2 =  floatArrayBase + (array2.length * floatArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size2)) {
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-				}
+				buffer.checkCapacitiyAndHandle(size2);
+				unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
 				break;
 			default:
 				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
@@ -313,17 +297,15 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
 				long[] array1 = (long[])unsafe.getObject(obj, offset);
 				long size1 = longArrayBase + (array1.length * longArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size1)) {
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-				}	
+				buffer.checkCapacitiyAndHandle(size1);
+				unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
 				break;
 			case JvmUtil.ADDRESSING_8_BYTE:
 				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
 				long[] array2 = (long[])unsafe.getObject(obj, offset);
 				long size2 = longArrayBase + (array2.length * longArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size2)) {
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-				}
+				buffer.checkCapacitiyAndHandle(size2);
+				unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
 				break;
 			default:
 				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
@@ -337,17 +319,15 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
 				double[] array1 = (double[])unsafe.getObject(obj, offset);
 				long size1 = doubleArrayBase + (array1.length * doubleArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size1)) {
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-				}	
+				buffer.checkCapacitiyAndHandle(size1);
+				unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
 				break;
 			case JvmUtil.ADDRESSING_8_BYTE:
 				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
 				double[] array2 = (double[])unsafe.getObject(obj, offset);
 				long size2 = doubleArrayBase + (array2.length * doubleArrayScale);
-				if (buffer.checkCapacitiyAndFlushIfNeeded(size2)) {
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-				}
+				buffer.checkCapacitiyAndHandle(size2);
+				unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
 				break;
 			default:
 				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
@@ -361,58 +341,50 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 
 	@Override
 	public void writeByte(long address) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.BYTE_SIZE)) {
-			unsafe.copyMemory(address, startAddress, JvmUtil.BYTE_SIZE);
-		}	
+		buffer.checkCapacitiyAndHandle(JvmUtil.BYTE_SIZE);
+		unsafe.copyMemory(address, startAddress, JvmUtil.BYTE_SIZE);
 	}
 
 	@Override
 	public void writeBoolean(long address) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.BOOLEAN_SIZE)) {
-			unsafe.copyMemory(address, startAddress, JvmUtil.BOOLEAN_SIZE);
-		}	
+		buffer.checkCapacitiyAndHandle(JvmUtil.BOOLEAN_SIZE);
+		unsafe.copyMemory(address, startAddress, JvmUtil.BOOLEAN_SIZE);
 	}
 
 	@Override
 	public void writeCharacter(long address) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.CHAR_SIZE)) {
-			unsafe.copyMemory(address, startAddress, JvmUtil.CHAR_SIZE);
-		}	
+		buffer.checkCapacitiyAndHandle(JvmUtil.CHAR_SIZE);
+		unsafe.copyMemory(address, startAddress, JvmUtil.CHAR_SIZE);
 	}
 
 	@Override
 	public void writeShort(long address) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.SHORT_SIZE)) {
-			unsafe.copyMemory(address, startAddress, JvmUtil.SHORT_SIZE);
-		}	
+		buffer.checkCapacitiyAndHandle(JvmUtil.SHORT_SIZE);
+		unsafe.copyMemory(address, startAddress, JvmUtil.SHORT_SIZE);
 	}
 
 	@Override
 	public void writeInteger(long address) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.INT_SIZE)) {
-			unsafe.copyMemory(address, startAddress, JvmUtil.INT_SIZE);
-		}	
+		buffer.checkCapacitiyAndHandle(JvmUtil.INT_SIZE);
+		unsafe.copyMemory(address, startAddress, JvmUtil.INT_SIZE);
 	}
 
 	@Override
 	public void writeFloat(long address) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.FLOAT_SIZE)) {
-			unsafe.copyMemory(address, startAddress, JvmUtil.FLOAT_SIZE);
-		}	
+		buffer.checkCapacitiyAndHandle(JvmUtil.FLOAT_SIZE);
+		unsafe.copyMemory(address, startAddress, JvmUtil.FLOAT_SIZE);
 	}
 	
 	@Override
 	public void writeLong(long address) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.LONG_SIZE)) {
-			unsafe.copyMemory(address, startAddress, JvmUtil.LONG_SIZE);
-		}	
+		buffer.checkCapacitiyAndHandle(JvmUtil.LONG_SIZE);
+		unsafe.copyMemory(address, startAddress, JvmUtil.LONG_SIZE);
 	}
 
 	@Override
 	public void writeDouble(long address) {
-		if (buffer.checkCapacitiyAndFlushIfNeeded(JvmUtil.DOUBLE_SIZE)) {
-			unsafe.copyMemory(address, startAddress, JvmUtil.DOUBLE_SIZE);
-		}	
+		buffer.checkCapacitiyAndHandle(JvmUtil.DOUBLE_SIZE);
+		unsafe.copyMemory(address, startAddress, JvmUtil.DOUBLE_SIZE);
 	}
 
 	@Override
@@ -446,72 +418,64 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	public void writeByteArray(long address) {
 		int length = getArrayLength(address, byteArrayBase);
 		long size = byteArrayBase + (length * byteArrayScale);
-		if (buffer.checkCapacitiyAndFlushIfNeeded(size)) {
-			unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
-		}	
+		buffer.checkCapacitiyAndHandle(size);
+		unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
 	}
 	
 	@Override
 	public void writeBooleanArray(long address) {
 		int length = getArrayLength(address, booleanArrayBase);
 		long size =  booleanArrayBase + (length * booleanArrayScale);
-		if (buffer.checkCapacitiyAndFlushIfNeeded(size)) {
-			unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
-		}	
+		buffer.checkCapacitiyAndHandle(size);
+		unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
 	}
 	
 	@Override
 	public void writeCharacterArray(long address) {
 		int length = getArrayLength(address, charArrayBase);
 		long size = charArrayBase + (length * charArrayScale);
-		if (buffer.checkCapacitiyAndFlushIfNeeded(size)) {
-			unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
-		}	
+		buffer.checkCapacitiyAndHandle(size);
+		unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
 	}
 	
 	@Override
 	public void writeShortArray(long address) {
 		int length = getArrayLength(address, shortArrayBase);
 		long size = shortArrayBase + (length * shortArrayScale);
-		if (buffer.checkCapacitiyAndFlushIfNeeded(size)) {
-			unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
-		}	
+		buffer.checkCapacitiyAndHandle(size);
+		unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
 	}
 	
 	@Override
 	public void writeIntegerArray(long address) {
 		int length = getArrayLength(address, intArrayBase);
 		long size = intArrayBase + (length * intArrayScale);
-		if (buffer.checkCapacitiyAndFlushIfNeeded(size)) {
-			unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
-		}	
+		buffer.checkCapacitiyAndHandle(size);
+		unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
 	}
 	
 	@Override
 	public void writeFloatArray(long address) {
 		int length = getArrayLength(address, floatArrayBase);
 		long size = floatArrayBase + (length * floatArrayScale);
-		if (buffer.checkCapacitiyAndFlushIfNeeded(size)) {
-			unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
-		}	
+		buffer.checkCapacitiyAndHandle(size);
+		unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
 	}
 	
 	@Override
 	public void writeLongArray(long address) {
 		int length = getArrayLength(address, longArrayBase);
 		long size = longArrayBase + (length * longArrayScale);
-		if (buffer.checkCapacitiyAndFlushIfNeeded(size)) {
-			unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
-		}	
+		buffer.checkCapacitiyAndHandle(size);
+		unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
 	}
 	
 	@Override
 	public void writeDoubleArray(long address) {
 		int length = getArrayLength(address, doubleArrayBase);
 		long size = doubleArrayBase + (length * doubleArrayScale);
-		if (buffer.checkCapacitiyAndFlushIfNeeded(size)) {
-			unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
-		}	
+		buffer.checkCapacitiyAndHandle(size);
+		unsafe.copyMemory(address, startAddress + buffer.getIndex(), size);
 	}
 	
 	@Override

@@ -17,9 +17,11 @@
 
 package tr.com.serkanozal.jiagara.service.serialize;
 
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import tr.com.serkanozal.jiagara.exception.SerializationException;
 import tr.com.serkanozal.jiagara.serialize.Serializer;
 import tr.com.serkanozal.jiagara.serialize.SerializerFactory;
 
@@ -39,6 +41,14 @@ public class SerializerServiceImpl implements SerializerService {
 			cachedSerializers.put(clazz, serializer);
 		}
 		return serializer;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> void serialize(T obj, OutputStream os) throws SerializationException {
+		if (obj != null) {
+			getSerializer((Class<T>)obj.getClass()).serialize(obj, os);
+		}	
 	}
 	
 }

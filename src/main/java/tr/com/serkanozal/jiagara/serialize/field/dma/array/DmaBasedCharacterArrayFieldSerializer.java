@@ -14,25 +14,27 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.serialize.field.dma;
+package tr.com.serkanozal.jiagara.serialize.field.dma.array;
 
 import java.lang.reflect.Field;
 
+import tr.com.serkanozal.jiagara.serialize.field.dma.AbstractDmaBasedFieldSerializer;
+import tr.com.serkanozal.jiagara.serialize.field.dma.DirectMemoryAccessBasedFieldSerializer;
 import tr.com.serkanozal.jiagara.serialize.writer.dma.DirectMemoryAccessBasedOutputWriter;
 
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedEnumFieldSerializer<T> extends AbstractDmaBasedFieldSerializer<T, DirectMemoryAccessBasedOutputWriter> 
+public class DmaBasedCharacterArrayFieldSerializer<T> extends AbstractDmaBasedFieldSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T> {
-		
-	public DmaBasedEnumFieldSerializer(Field field) {
+	
+	public DmaBasedCharacterArrayFieldSerializer(Field field) {
 		super(field);
 	}
 	
 	@Override
 	public void serializeField(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		outputWriter.writeEnum(obj, fieldOffset);
+		outputWriter.writeCharacterArray(obj, fieldOffset);
 	}
 
 }

@@ -23,16 +23,16 @@ import tr.com.serkanozal.jiagara.serialize.writer.dma.DirectMemoryAccessBasedOut
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedEnumFieldSerializer<T> extends AbstractDmaBasedFieldSerializer<T, DirectMemoryAccessBasedOutputWriter> 
+public class DmaBasedMapFieldSerializer<T> extends AbstractDmaBasedFieldSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T> {
 		
-	public DmaBasedEnumFieldSerializer(Field field) {
+	public DmaBasedMapFieldSerializer(Field field) {
 		super(field);
 	}
 	
 	@Override
 	public void serializeField(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		outputWriter.writeEnum(obj, fieldOffset);
+		// TODO Implement map field serializer
 	}
 
 }

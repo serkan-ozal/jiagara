@@ -20,9 +20,11 @@ import java.io.OutputStream;
 
 import tr.com.serkanozal.jiagara.exception.SerializationException;
 import tr.com.serkanozal.jiagara.serialize.AbstractSerializer;
+import tr.com.serkanozal.jiagara.serialize.field.FieldSerializer;
 import tr.com.serkanozal.jiagara.serialize.field.dma.DirectMemoryAccessBasedDefaultFieldSerializerFactory;
 import tr.com.serkanozal.jiagara.serialize.field.dma.DirectMemoryAccessBasedFieldSerializerFactory;
 import tr.com.serkanozal.jiagara.serialize.writer.dma.DirectMemoryAccessBasedOutputWriter;
+import tr.com.serkanozal.jiagara.serialize.writer.dma.DirectMemoryAccessBasedOutputWriterFactory;
 
 /**
  * @author Serkan ÖZAL
@@ -39,7 +41,19 @@ public class DirectMemoryAccessBasedSerializer<T> extends AbstractSerializer<T, 
 	
 	@Override
 	public void serialize(T obj, OutputStream os) throws SerializationException {
-		
+		try {
+			DirectMemoryAccessBasedOutputWriter outputWriter = 
+					DirectMemoryAccessBasedOutputWriterFactory.createDirectMemoryAccessBasedOutputWriter(os);
+			for (FieldSerializer<T, DirectMemoryAccessBasedOutputWriter> fieldSerializer : fieldSerializers) {
+				fieldSerializer.serializeField(obj, outputWriter);
+			}
+			outputWriter.release();
+			os.flush();
+		} 
+		catch (Throwable t) {
+			logger.error("Error occured while serialization", t);
+			throw new SerializationException("Error occured while serialization", t);
+		}
 	}
 
 }

@@ -25,6 +25,6 @@ import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
  */
 public interface FieldSerializerFactory<O extends OutputWriter> {
 
-	FieldSerializer<O> createFieldSerializer(Field field);
+	<T> FieldSerializer<T, O> createFieldSerializer(Field field);
 	
 }

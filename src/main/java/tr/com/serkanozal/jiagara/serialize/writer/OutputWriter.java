@@ -21,6 +21,8 @@ package tr.com.serkanozal.jiagara.serialize.writer;
  */
 public interface OutputWriter {
 
+	void release();
+	
 	void writeNull();
 	
 	void write(byte value);
@@ -34,6 +36,7 @@ public interface OutputWriter {
 	void write(String value);
 	void write(Enum<?> value);
 	void write(Object value);
+	void writeTyped(Object value);
 	
 	void write(byte[] array);
 	void write(boolean[] array);

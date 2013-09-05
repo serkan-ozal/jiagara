@@ -26,18 +26,18 @@ public class DirectMemoryAccessBasedBuffer extends Buffer {
 
 	private long startAddress;
 	
-	public DirectMemoryAccessBasedBuffer() {
-		super();
+	public DirectMemoryAccessBasedBuffer(BufferListener bufferListener) {
+		super(bufferListener);
 		this.startAddress = JvmUtil.getArrayBaseAddress(buffer, byte.class);
 	}
 	
-	public DirectMemoryAccessBasedBuffer(int size) {
-		super();
+	public DirectMemoryAccessBasedBuffer(int size, BufferListener bufferListener) {
+		super(size, bufferListener);
 		this.startAddress = JvmUtil.getArrayBaseAddress(buffer, byte.class);
 	}
 	
-	public DirectMemoryAccessBasedBuffer(byte[] buffer) {
-		super();
+	public DirectMemoryAccessBasedBuffer(byte[] buffer, BufferListener bufferListener) {
+		super(buffer, bufferListener);
 		this.startAddress = JvmUtil.getArrayBaseAddress(buffer, byte.class);
 	}
 	

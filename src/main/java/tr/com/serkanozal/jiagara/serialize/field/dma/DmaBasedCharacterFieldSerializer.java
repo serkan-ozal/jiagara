@@ -18,22 +18,21 @@ package tr.com.serkanozal.jiagara.serialize.field.dma;
 
 import java.lang.reflect.Field;
 
-import tr.com.serkanozal.jiagara.serialize.field.AbstractFieldSerializer;
 import tr.com.serkanozal.jiagara.serialize.writer.dma.DirectMemoryAccessBasedOutputWriter;
 
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedCharacterFieldSerializer extends AbstractFieldSerializer<DirectMemoryAccessBasedOutputWriter> 
-		implements DirectMemoryAccessBasedFieldSerializer {
+public class DmaBasedCharacterFieldSerializer<T> extends AbstractDmaBasedFieldSerializer<T, DirectMemoryAccessBasedOutputWriter> 
+		implements DirectMemoryAccessBasedFieldSerializer<T> {
 		
 	public DmaBasedCharacterFieldSerializer(Field field) {
 		super(field);
 	}
 	
 	@Override
-	public void serializeField(DirectMemoryAccessBasedOutputWriter outputWriter) {
-	
+	public void serializeField(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
+		outputWriter.writeCharacter(obj, fieldOffset);
 	}
 
 }

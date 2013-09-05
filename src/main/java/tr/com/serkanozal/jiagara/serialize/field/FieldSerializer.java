@@ -21,8 +21,8 @@ import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
 /**
  * @author Serkan ÖZAL
  */
-public interface FieldSerializer<O extends OutputWriter> {
+public interface FieldSerializer<T, O extends OutputWriter> {
 
-	void serializeField(O outputWriter);
+	void serializeField(T obj, O outputWriter);
 	
 }

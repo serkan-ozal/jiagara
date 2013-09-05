@@ -27,22 +27,26 @@ public class Buffer {
 	
 	protected byte[] buffer;
 	protected int index;
+	protected BufferListener bufferListener;
 	
-	public Buffer() {
+	public Buffer(BufferListener bufferListener) {
 		this.buffer = new byte[DEFAULT_BUFFER_SIZE];
 		this.index = 0;
+		this.bufferListener = bufferListener;
 	}
 	
-	public Buffer(int size) {
+	public Buffer(int size, BufferListener bufferListener) {
 		AssertUtil.notNegative(size, "Size cannot be negative: $0");
 		this.buffer = new byte[size];
 		this.index = 0;
+		this.bufferListener = bufferListener;
 	}
 	
-	public Buffer(byte[] buffer) {
+	public Buffer(byte[] buffer, BufferListener bufferListener) {
 		AssertUtil.notNull(buffer, "Buffer array cannot be null");
 		this.buffer = buffer;
 		this.index = 0;
+		this.bufferListener = bufferListener;
 	}
 	
 	public byte[] getBufferArray() {
@@ -51,6 +55,14 @@ public class Buffer {
 
 	public int getIndex() {
 		return index;
+	}
+	
+	public BufferListener getBufferListener() {
+		return bufferListener;
+	}
+	
+	public void setBufferListener(BufferListener bufferListener) {
+		this.bufferListener = bufferListener;
 	}
 
 	public int getLength() {
@@ -109,14 +121,32 @@ public class Buffer {
 		return index + size < buffer.length;
 	}
 	
-	public boolean checkCapacitiyAndFlushIfNeeded(int size) {
-		// TODO Implement flush trigger if needed
-		return index + size < buffer.length;
+	public void checkCapacitiyAndHandle(int size) {
+		if (index + size >= buffer.length) {
+			if (bufferListener != null) {
+				bufferListener.doFlush();
+			}
+			else {
+				// TODO Expand buffer
+			}
+		}
 	}
 	
-	public boolean checkCapacitiyAndFlushIfNeeded(long size) {
-		// TODO Implement flush trigger if needed
-		return index + size < buffer.length;
+	public void checkCapacitiyAndHandle(long size) {
+		if (index + size >= buffer.length) {
+			if (bufferListener != null) {
+				bufferListener.doFlush();
+			}
+			else {
+				// TODO Expand buffer
+			}
+		}
+	}
+	
+	public interface BufferListener {
+		
+		void doFlush();
+		
 	}
 	
 }

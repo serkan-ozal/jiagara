@@ -17,6 +17,8 @@
 package tr.com.serkanozal.jiagara.domain.builder.buffer.dma;
 
 import tr.com.serkanozal.jiagara.domain.builder.Builder;
+import tr.com.serkanozal.jiagara.domain.model.buffer.Buffer;
+import tr.com.serkanozal.jiagara.domain.model.buffer.Buffer.BufferListener;
 import tr.com.serkanozal.jiagara.domain.model.buffer.dma.DirectMemoryAccessBasedBuffer;
 
 /**
@@ -26,6 +28,7 @@ public class DirectMemoryAccessBasedBufferBuilder implements Builder<DirectMemor
 
 	private byte[] buffer;
 	private int size;
+	private BufferListener bufferListener;
 
 	public DirectMemoryAccessBasedBufferBuilder buffer(byte[] buffer) {
 		this.buffer = buffer;
@@ -37,16 +40,21 @@ public class DirectMemoryAccessBasedBufferBuilder implements Builder<DirectMemor
 		return this;
 	}
 	
+	public DirectMemoryAccessBasedBufferBuilder bufferListener(Buffer.BufferListener bufferListener) {
+		this.bufferListener = bufferListener;
+		return this;
+	}
+	
 	@Override
 	public DirectMemoryAccessBasedBuffer build() {
 		if (buffer != null) {
-			return new DirectMemoryAccessBasedBuffer(buffer);
+			return new DirectMemoryAccessBasedBuffer(buffer, bufferListener);
 		}
 		else if (size != 0) {
-			return new DirectMemoryAccessBasedBuffer(size);
+			return new DirectMemoryAccessBasedBuffer(size, bufferListener);
 		}
 		else {
-			return new DirectMemoryAccessBasedBuffer();
+			return new DirectMemoryAccessBasedBuffer(bufferListener);
 		}
 	}
 	

@@ -18,21 +18,24 @@ package tr.com.serkanozal.jiagara.serialize.field.dma;
 
 import java.lang.reflect.Field;
 
-import tr.com.serkanozal.jiagara.serialize.writer.dma.DirectMemoryAccessBasedOutputWriter;
+import tr.com.serkanozal.jiagara.serialize.field.AbstractFieldSerializer;
+import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
+import tr.com.serkanozal.jiagara.util.JvmUtil;
+import sun.misc.Unsafe;
 
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedEnumFieldSerializer<T> extends AbstractDmaBasedFieldSerializer<T, DirectMemoryAccessBasedOutputWriter> 
-		implements DirectMemoryAccessBasedFieldSerializer<T> {
-		
-	public DmaBasedEnumFieldSerializer(Field field) {
+@SuppressWarnings("restriction")
+public abstract class AbstractDmaBasedFieldSerializer<T, O extends OutputWriter> extends AbstractFieldSerializer<T, O> {
+
+	protected Unsafe unsafe;
+	protected long fieldOffset;
+	
+	public AbstractDmaBasedFieldSerializer(Field field) {
 		super(field);
+		unsafe = JvmUtil.getUnsafe();
+		fieldOffset = unsafe.objectFieldOffset(field);
 	}
 	
-	@Override
-	public void serializeField(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		outputWriter.writeEnum(obj, fieldOffset);
-	}
-
 }

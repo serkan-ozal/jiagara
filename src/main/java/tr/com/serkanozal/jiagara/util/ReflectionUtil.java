@@ -20,6 +20,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -91,6 +93,26 @@ public class ReflectionUtil {
 				}	
 			}
 		}	
+	}
+	
+	public static List<Field> sortFieldsByName(List<Field> fieldList) {
+		Collections.sort(
+				fieldList, 
+				new Comparator<Field>() {
+					@Override
+					public int compare(Field field1, Field field2) {
+						return field1.getName().compareTo(field2.getName());
+					}
+				});
+		return fieldList;
+	}
+	
+	public static List<Field> getAllFieldsSortedByName(Class<?> cls) {
+		return sortFieldsByName(getAllFields(cls));
+	}
+
+	public static List<Field> getAllFieldsSortedByName(Class<?> cls, Class<? extends Annotation> annotationFilter) {
+		return sortFieldsByName(getAllFieldsSortedByName(cls, annotationFilter));
 	}
 	
 	public static Method getMethod(Class<?> cls, String methodName) {

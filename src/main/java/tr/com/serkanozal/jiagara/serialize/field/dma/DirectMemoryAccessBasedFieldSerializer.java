@@ -22,6 +22,6 @@ import tr.com.serkanozal.jiagara.serialize.writer.dma.DirectMemoryAccessBasedOut
 /**
  * @author Serkan ÖZAL
  */
-public interface DirectMemoryAccessBasedFieldSerializer extends FieldSerializer<DirectMemoryAccessBasedOutputWriter> {
+public interface DirectMemoryAccessBasedFieldSerializer<T> extends FieldSerializer<T, DirectMemoryAccessBasedOutputWriter> {
 
 }

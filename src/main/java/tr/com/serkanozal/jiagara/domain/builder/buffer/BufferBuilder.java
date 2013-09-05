@@ -18,6 +18,7 @@ package tr.com.serkanozal.jiagara.domain.builder.buffer;
 
 import tr.com.serkanozal.jiagara.domain.builder.Builder;
 import tr.com.serkanozal.jiagara.domain.model.buffer.Buffer;
+import tr.com.serkanozal.jiagara.domain.model.buffer.Buffer.BufferListener;
 
 /**
  * @author Serkan ÖZAL
@@ -26,6 +27,7 @@ public class BufferBuilder implements Builder<Buffer> {
 
 	private byte[] buffer;
 	private int size;
+	private BufferListener bufferListener;
 
 	public BufferBuilder buffer(byte[] buffer) {
 		this.buffer = buffer;
@@ -37,16 +39,21 @@ public class BufferBuilder implements Builder<Buffer> {
 		return this;
 	}
 	
+	public BufferBuilder bufferListener(Buffer.BufferListener bufferListener) {
+		this.bufferListener = bufferListener;
+		return this;
+	}
+	
 	@Override
 	public Buffer build() {
 		if (buffer != null) {
-			return new Buffer(buffer);
+			return new Buffer(buffer, bufferListener);
 		}
 		else if (size != 0) {
-			return new Buffer(size);
+			return new Buffer(size, bufferListener);
 		}
 		else {
-			return new Buffer();
+			return new Buffer(bufferListener);
 		}
 	}
 	

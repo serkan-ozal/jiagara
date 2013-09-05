@@ -16,25 +16,39 @@
 
 package tr.com.serkanozal.jiagara.serialize;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.log4j.Logger;
 
 import tr.com.serkanozal.jiagara.serialize.field.FieldSerializer;
 import tr.com.serkanozal.jiagara.serialize.field.FieldSerializerFactory;
 import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
+import tr.com.serkanozal.jiagara.util.LogUtil;
+import tr.com.serkanozal.jiagara.util.ReflectionUtil;
 
 /**
  * @author Serkan ÖZAL
  */
 public abstract class AbstractSerializer<T, O extends OutputWriter> implements Serializer<T> {
 
+	protected static final Logger logger = LogUtil.getLogger();
+	
 	protected Class<T> clazz;
 	protected FieldSerializerFactory<O> fieldSerializerFactory;
-	protected List<FieldSerializer<O>> fieldSerializers = new ArrayList<FieldSerializer<O>>(); 
+	protected List<FieldSerializer<T, O>> fieldSerializers = new ArrayList<FieldSerializer<T, O>>(); 
 	
+	@SuppressWarnings("unchecked")
 	public AbstractSerializer(Class<T> clazz, FieldSerializerFactory<O> fieldSerializerFactory) {
 		this.clazz = clazz;
 		this.fieldSerializerFactory = fieldSerializerFactory;
+		List<Field> fieldsSortedByName = ReflectionUtil.getAllFieldsSortedByName(clazz);
+		if (fieldsSortedByName != null) {
+			for (Field field : fieldsSortedByName) {
+				fieldSerializers.add((FieldSerializer<T, O>) fieldSerializerFactory.createFieldSerializer(field));
+			}
+		}
 	}
 	
 }

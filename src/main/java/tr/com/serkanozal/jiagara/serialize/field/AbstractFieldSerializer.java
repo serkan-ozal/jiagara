@@ -23,7 +23,7 @@ import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
 /**
  * @author Serkan ÖZAL
  */
-public abstract class AbstractFieldSerializer<O extends OutputWriter> implements FieldSerializer<O> {
+public abstract class AbstractFieldSerializer<T, O extends OutputWriter> implements FieldSerializer<T, O> {
 
 	protected Field field;
 	
