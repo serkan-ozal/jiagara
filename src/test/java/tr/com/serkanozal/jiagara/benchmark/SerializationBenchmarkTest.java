@@ -17,7 +17,10 @@
 package tr.com.serkanozal.jiagara.benchmark;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -26,6 +29,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import tr.com.serkanozal.jiagara.serialize.Serializer;
+import tr.com.serkanozal.jiagara.serialize.SerializerFactory;
 import tr.com.serkanozal.jiagara.service.serialize.SerializerService;
 import tr.com.serkanozal.jiagara.service.serialize.SerializerServiceFactory;
 import tr.com.serkanozal.jiagara.util.JvmUtil;
@@ -40,33 +45,25 @@ import com.esotericsoftware.kryo.io.Output;
 // -XX:PermSize=256M -XX:MaxPermSize=512M -Xms1g -Xmx2g
 public class SerializationBenchmarkTest implements Serializable {
 
-	public static void main(String[] args) {
-		new SerializationBenchmarkTest().runSerializationBenchmarkTestDrivers();
-	}
-	
 	@Test
 	public void runSerializationBenchmarkTestDrivers() {
 		try {
 			JvmUtil.info();
 			
-			final int SERIALIZATION_COUNT = 5000;
-			ClassToSerialize[] objectArray = new ClassToSerialize[SERIALIZATION_COUNT];
-			for (int i = 0; i < SERIALIZATION_COUNT; i++) {
-				objectArray[i] = new ClassToSerialize();
-			}
-			
-			
+			final int SERIALIZATION_COUNT = 1000;
+
 			List<SerializationBenchmarkTestDriver> serializationBenchmarkTestDriverList = 
 					new ArrayList<SerializationBenchmarkTestDriver>();
 			serializationBenchmarkTestDriverList.add(new JiagaraSerializationBenchmarkTestDriver());
 			serializationBenchmarkTestDriverList.add(new KryoSerializationBenchmarkTestDriver());
 			serializationBenchmarkTestDriverList.add(new JavaSerializationBenchmarkTestDriver());
+			serializationBenchmarkTestDriverList.add(new CustomSerializationBenchmarkTestDriver());
 			
 			for (SerializationBenchmarkTestDriver driver : serializationBenchmarkTestDriverList) {
 				ByteArrayOutputStream bos = new ByteArrayOutputStream();
 				long start = System.currentTimeMillis();
 				for (int i = 0; i < SERIALIZATION_COUNT; i++) {
-					driver.serialize(objectArray[i], bos);
+					driver.serialize(driver.getObjectToSerialize(), bos);
 				}
 				long finish = System.currentTimeMillis();
 				System.out.println(driver.getName() + " has been executed " + SERIALIZATION_COUNT + 
@@ -79,7 +76,7 @@ public class SerializationBenchmarkTest implements Serializable {
 	}
 	
 	@SuppressWarnings({ "unused" })
-	private class ClassToSerialize implements Serializable {
+	private class ClassToSerialize {
 		
 		private byte byteValue = 1;
 		private boolean booleanValue = true;
@@ -92,12 +89,58 @@ public class SerializationBenchmarkTest implements Serializable {
 		
 	}
 	
+	@SuppressWarnings("unused")
+	private class SerializableClassToSerialize implements Serializable {
+		
+		private byte byteValue = 1;
+		private boolean booleanValue = true;
+		private char charValue = 'X';
+		private short shortValue = 10;
+		private int intValue = 100;
+		private float floatValue = 200.0F;
+		private long longValue = 1000;
+		private double doubleValue = 2000.0;
+		
+	}
+	
+	private class ExternalizableClassToSerialize implements Externalizable  {
+		
+		private byte byteValue = 1;
+		private boolean booleanValue = true;
+		private char charValue = 'X';
+		private short shortValue = 10;
+		private int intValue = 100;
+		private float floatValue = 200.0F;
+		private long longValue = 1000;
+		private double doubleValue = 2000.0;
+		
+		@Override
+		public void writeExternal(ObjectOutput out) throws IOException {
+			out.writeByte(byteValue);
+			out.writeBoolean(booleanValue);
+			out.writeChar(charValue);
+			out.writeShort(shortValue);
+			out.writeInt(intValue);
+			out.writeFloat(floatValue);
+			out.writeLong(longValue);
+			out.writeDouble(doubleValue);
+		}
+		@Override
+		public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+			
+		}
+		
+	}
+	
 	private class JiagaraSerializationBenchmarkTestDriver implements SerializationBenchmarkTestDriver {
 		
+		@SuppressWarnings("unused")
 		private SerializerService serializerService;
+		private Serializer<ClassToSerialize> serializer;
 		
 		private JiagaraSerializationBenchmarkTestDriver() {
 			serializerService = SerializerServiceFactory.getSerializerService();
+			serializer = SerializerFactory.createSerializer(ClassToSerialize.class);
 		}
 		
 		@Override
@@ -107,8 +150,13 @@ public class SerializationBenchmarkTest implements Serializable {
 		
 		@Override
 		public void serialize(Object o, OutputStream os) {
-			serializerService.serialize(o, os);
+			serializer.serialize((ClassToSerialize) o, os);
 		}
+		
+		@Override
+		public Object getObjectToSerialize() {
+			return new ClassToSerialize();
+		}	
 		
 	}
 	
@@ -129,6 +177,11 @@ public class SerializationBenchmarkTest implements Serializable {
 		public void serialize(Object o, OutputStream os) {
 			kryo.writeObject(new Output(os), o);
 		}
+		
+		@Override
+		public Object getObjectToSerialize() {
+			return new ClassToSerialize();
+		}	
 		
 	}
 	
@@ -156,12 +209,49 @@ public class SerializationBenchmarkTest implements Serializable {
 			}
 		}
 		
+		@Override
+		public Object getObjectToSerialize() {
+			return new SerializableClassToSerialize();
+		}	
+		
+	}
+	
+	private class CustomSerializationBenchmarkTestDriver implements SerializationBenchmarkTestDriver {
+		
+		private ObjectOutputStream oos;
+		
+		private CustomSerializationBenchmarkTestDriver() {
+			
+		}
+		
+		@Override
+		public String getName() {
+			return "Custom Serializer";
+		}
+		
+		@Override
+		public void serialize(Object o, OutputStream os) {
+			try {
+				oos = new ObjectOutputStream(os);
+				oos.writeObject(o);
+			} 
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		@Override
+		public Object getObjectToSerialize() {
+			return new ExternalizableClassToSerialize();
+		}	
+		
 	}
 	
 	private interface SerializationBenchmarkTestDriver {
 		
 		String getName();
 		void serialize(Object o, OutputStream os);
+		Object getObjectToSerialize();
 		
 	}
 	
