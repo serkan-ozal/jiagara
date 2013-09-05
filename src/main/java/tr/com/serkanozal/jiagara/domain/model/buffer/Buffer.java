@@ -108,6 +108,11 @@ public class Buffer {
 		index += length;
 	}
 	
+	public void forward(long length) {
+		AssertUtil.smaller(index + length, buffer.length, "Index+length must be smaller than $1 (length of buffer array): $0");
+		index += length;
+	}
+	
 	public void move(int index) {
 		AssertUtil.smaller(index, buffer.length, "Index must be smaller than $1 (length of buffer array): $0");
 		this.index = index;

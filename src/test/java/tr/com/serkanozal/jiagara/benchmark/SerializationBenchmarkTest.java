@@ -68,6 +68,9 @@ public class SerializationBenchmarkTest implements Serializable {
 				long finish = System.currentTimeMillis();
 				System.out.println(driver.getName() + " has been executed " + SERIALIZATION_COUNT + 
 						           " times in " + (finish - start) + " milliseconds ...");
+				//byte[] output = bos.toByteArray();
+				//long outputDataStartAddress = JvmUtil.getArrayBaseAddress(output, byte.class);
+				//JvmUtil.dump(outputDataStartAddress, output.length);
 			}
 		}
 		catch (Throwable t) {
