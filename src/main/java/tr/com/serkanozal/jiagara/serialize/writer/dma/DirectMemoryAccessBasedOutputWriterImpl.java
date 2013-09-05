@@ -32,7 +32,6 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 		implements DirectMemoryAccessBasedOutputWriter {
 
 	private long startAddress;
-	private byte[] bufferArray;
 	private Unsafe unsafe;
 	private int byteArrayBase;
 	private int byteArrayScale;

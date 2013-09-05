@@ -39,7 +39,7 @@ public class DirectMemoryAccessBasedDefaultFieldSerializerFactory implements Dir
 
 	@Override
 	public <T> FieldSerializer<T, DirectMemoryAccessBasedOutputWriter> createFieldSerializer(Field field) {
-		Class<?> fieldClass = field.getClass();
+		Class<?> fieldClass = field.getType();
 		if (fieldClass.equals(byte.class)) {
 			return new DmaBasedByteFieldSerializer<T>(field);
 		}

@@ -24,8 +24,11 @@
 		<log4j.version>1.2.16</log4j.version>
 		<guava.version>13.0</guava.version>
 		<commons.lang.version>2.6</commons.lang.version>
-		<junit.version>4.8.2</junit.version>
+		
+		<kryo.version>2.21</kryo.version>
+		
 		<easymock.version>3.0</easymock.version>
+		<junit.version>4.8.2</junit.version>
 
     </properties>
   
@@ -120,6 +123,18 @@
 		
 		
 		
+		<!-- benchmark                                    -->
+        <!-- ============================================ -->
+		<dependency>
+			<groupId>com.esotericsoftware.kryo</groupId>
+			<artifactId>kryo</artifactId>
+			<version>${kryo.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- ============================================ -->
+		
+		
+		
 		<!-- test                                         -->
         <!-- ============================================ -->
 		<dependency>
@@ -135,7 +150,7 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- ============================================ -->
-		        
+		      
 	</dependencies>
     
     <repositories>

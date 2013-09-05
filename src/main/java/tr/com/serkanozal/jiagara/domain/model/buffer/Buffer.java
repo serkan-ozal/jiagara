@@ -23,7 +23,7 @@ import tr.com.serkanozal.jiagara.util.AssertUtil;
  */
 public class Buffer {
 
-	public static final int DEFAULT_BUFFER_SIZE = 1024;
+	public static final int DEFAULT_BUFFER_SIZE = 4096;
 	
 	protected byte[] buffer;
 	protected int index;
@@ -125,6 +125,7 @@ public class Buffer {
 		if (index + size >= buffer.length) {
 			if (bufferListener != null) {
 				bufferListener.doFlush();
+				reset();
 			}
 			else {
 				// TODO Expand buffer
@@ -136,6 +137,7 @@ public class Buffer {
 		if (index + size >= buffer.length) {
 			if (bufferListener != null) {
 				bufferListener.doFlush();
+				reset();
 			}
 			else {
 				// TODO Expand buffer
