@@ -21,16 +21,7 @@ import java.io.Serializable;
 /**
  * @author Serkan ÖZAL
  */
-@SuppressWarnings({ "serial", "unused" })
-public class SerializableClassToSerialize implements Serializable {
+@SuppressWarnings({ "serial" })
+public class SerializableClassToSerialize extends ClassToSerialize implements Serializable {
 
-	private byte byteValue = 1;
-	private boolean booleanValue = true;
-	private char charValue = 'X';
-	private short shortValue = 10;
-	private int intValue = 100;
-	private float floatValue = 200.0F;
-	private long longValue = 1000;
-	private double doubleValue = 2000.0;
-	
 }

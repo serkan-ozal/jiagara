@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.EncoderFactory;
@@ -50,28 +51,75 @@ public class SerializationBenchmarkTest implements Serializable {
 		try {
 			JvmUtil.info();
 			
-			final int SERIALIZATION_COUNT = 1000;
+			final int PRE_SERIALIZATION_COUNT = 10000;
+			final int SERIALIZATION_COUNT = 100000;
 
-			List<SerializationBenchmarkTestDriver> serializationBenchmarkTestDriverList = 
-					new ArrayList<SerializationBenchmarkTestDriver>();
-			serializationBenchmarkTestDriverList.add(new JiagaraSerializationBenchmarkTestDriver());
-			serializationBenchmarkTestDriverList.add(new KryoSerializationBenchmarkTestDriver());
-			serializationBenchmarkTestDriverList.add(new AvroSerializationBenchmarkTestDriver());
-			serializationBenchmarkTestDriverList.add(new JavaSerializationBenchmarkTestDriver());
-			serializationBenchmarkTestDriverList.add(new CustomSerializationBenchmarkTestDriver());
+			SerializationBenchmarkTestDriver[] serializationBenchmarkTestDrivers = new SerializationBenchmarkTestDriver[5];
+			serializationBenchmarkTestDrivers[0] = new JiagaraSerializationBenchmarkTestDriver();
+			serializationBenchmarkTestDrivers[1] = new KryoSerializationBenchmarkTestDriver();
+			serializationBenchmarkTestDrivers[2] = new AvroSerializationBenchmarkTestDriver();
+			serializationBenchmarkTestDrivers[3] = new JavaSerializationBenchmarkTestDriver();
+			serializationBenchmarkTestDrivers[4] = new CustomSerializationBenchmarkTestDriver();
+			long[][] results = new long[serializationBenchmarkTestDrivers.length][10];
 			
-			for (SerializationBenchmarkTestDriver driver : serializationBenchmarkTestDriverList) {
-				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				long start = System.currentTimeMillis();
-				for (int i = 0; i < SERIALIZATION_COUNT; i++) {
-					driver.serialize(driver.getObjectToSerialize(), bos);
+			for (int run = 0; run < results[0].length; run++) {
+				System.out.println("Round " + (run + 1) + "/" + results[0].length + " starts...");
+				for (int index = 0; index < serializationBenchmarkTestDrivers.length; index++) {
+					SerializationBenchmarkTestDriver driver = serializationBenchmarkTestDrivers[index];
+					System.gc();
+					System.gc();
+					System.gc();
+					
+					Thread.sleep(2000);
+	
+					System.gc();
+	
+					System.out.println("Warmup " + driver.getName() + " ...");
+					ByteArrayOutputStream bos = new ByteArrayOutputStream();
+					long start = System.nanoTime();
+					for (int i = 0; i < PRE_SERIALIZATION_COUNT; i++) {
+						driver.serialize(driver.getObjectToSerialize(), bos);
+					}
+					long finish = System.nanoTime();
+					System.out.println("Warmup for " + driver.getName() + " has been executed " + PRE_SERIALIZATION_COUNT + 
+							           " times in " + TimeUnit.NANOSECONDS.toMillis(finish - start) + " milliseconds ...");
+	
+					System.gc();
+					System.gc();
+					System.gc();
+					
+					Thread.sleep(2000);
+					
+					System.gc();
+					
+					bos = new ByteArrayOutputStream();
+					start = System.nanoTime();
+					for (int i = 0; i < SERIALIZATION_COUNT; i++) {
+						driver.serialize(driver.getObjectToSerialize(), bos);
+					}
+					finish = System.nanoTime();
+					System.out.println(driver.getName() + " has been executed " + SERIALIZATION_COUNT + 
+							           " times in " + TimeUnit.NANOSECONDS.toMillis(finish - start) + " milliseconds ...");
+					
+					results[index][run] = (finish - start);
+					
+					//byte[] output = bos.toByteArray();
+					//long outputDataStartAddress = JvmUtil.getArrayBaseAddress(output, byte.class);
+					//JvmUtil.dump(outputDataStartAddress, output.length);
 				}
-				long finish = System.currentTimeMillis();
-				System.out.println(driver.getName() + " has been executed " + SERIALIZATION_COUNT + 
-						           " times in " + (finish - start) + " milliseconds ...");
-				//byte[] output = bos.toByteArray();
-				//long outputDataStartAddress = JvmUtil.getArrayBaseAddress(output, byte.class);
-				//JvmUtil.dump(outputDataStartAddress, output.length);
+				System.out.println("");
+			}
+			
+			for (int index = 0; index < serializationBenchmarkTestDrivers.length; index++) {
+				SerializationBenchmarkTestDriver driver = serializationBenchmarkTestDrivers[index];
+				
+				long result = 0;
+				for (int run = 0; run < results[index].length; run++) {
+					result += results[index][run];
+				}
+				
+				System.out.println(driver.getName() + " has been executed in avg " + 
+									TimeUnit.NANOSECONDS.toMillis(result / results[index].length) + " milliseconds ...");
 			}
 		}
 		catch (Throwable t) {
@@ -102,7 +150,7 @@ public class SerializationBenchmarkTest implements Serializable {
 		
 		@Override
 		public Object getObjectToSerialize() {
-			return new ClassToSerialize();
+			return new ClassToSerialize().randomize();
 		}	
 		
 	}
@@ -127,7 +175,7 @@ public class SerializationBenchmarkTest implements Serializable {
 		
 		@Override
 		public Object getObjectToSerialize() {
-			return new ClassToSerialize();
+			return new ClassToSerialize().randomize();
 		}	
 		
 	}
@@ -157,7 +205,7 @@ public class SerializationBenchmarkTest implements Serializable {
 		
 		@Override
 		public Object getObjectToSerialize() {
-			return new ClassToSerialize();
+			return new ClassToSerialize().randomize();
 		}	
 		
 	}
@@ -188,7 +236,7 @@ public class SerializationBenchmarkTest implements Serializable {
 		
 		@Override
 		public Object getObjectToSerialize() {
-			return new SerializableClassToSerialize();
+			return new SerializableClassToSerialize().randomize();
 		}	
 		
 	}
@@ -219,7 +267,7 @@ public class SerializationBenchmarkTest implements Serializable {
 		
 		@Override
 		public Object getObjectToSerialize() {
-			return new ExternalizableClassToSerialize();
+			return new ExternalizableClassToSerialize().randomize();
 		}	
 		
 	}
