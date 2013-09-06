@@ -17,16 +17,16 @@
 package tr.com.serkanozal.jiagara.benchmark;
 
 import java.io.ByteArrayOutputStream;
-import java.io.Externalizable;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.avro.io.DatumWriter;
+import org.apache.avro.io.EncoderFactory;
+import org.apache.avro.reflect.ReflectDatumWriter;
 import org.junit.Test;
 
 import tr.com.serkanozal.jiagara.serialize.Serializer;
@@ -56,6 +56,7 @@ public class SerializationBenchmarkTest implements Serializable {
 					new ArrayList<SerializationBenchmarkTestDriver>();
 			serializationBenchmarkTestDriverList.add(new JiagaraSerializationBenchmarkTestDriver());
 			serializationBenchmarkTestDriverList.add(new KryoSerializationBenchmarkTestDriver());
+			serializationBenchmarkTestDriverList.add(new AvroSerializationBenchmarkTestDriver());
 			serializationBenchmarkTestDriverList.add(new JavaSerializationBenchmarkTestDriver());
 			serializationBenchmarkTestDriverList.add(new CustomSerializationBenchmarkTestDriver());
 			
@@ -77,64 +78,7 @@ public class SerializationBenchmarkTest implements Serializable {
 			t.printStackTrace();
 		}
 	}
-	
-	@SuppressWarnings({ "unused" })
-	private class ClassToSerialize {
-		
-		private byte byteValue = 1;
-		private boolean booleanValue = true;
-		private char charValue = 'X';
-		private short shortValue = 10;
-		private int intValue = 100;
-		private float floatValue = 200.0F;
-		private long longValue = 1000;
-		private double doubleValue = 2000.0;
-		
-	}
-	
-	@SuppressWarnings("unused")
-	private class SerializableClassToSerialize implements Serializable {
-		
-		private byte byteValue = 1;
-		private boolean booleanValue = true;
-		private char charValue = 'X';
-		private short shortValue = 10;
-		private int intValue = 100;
-		private float floatValue = 200.0F;
-		private long longValue = 1000;
-		private double doubleValue = 2000.0;
-		
-	}
-	
-	private class ExternalizableClassToSerialize implements Externalizable  {
-		
-		private byte byteValue = 1;
-		private boolean booleanValue = true;
-		private char charValue = 'X';
-		private short shortValue = 10;
-		private int intValue = 100;
-		private float floatValue = 200.0F;
-		private long longValue = 1000;
-		private double doubleValue = 2000.0;
-		
-		@Override
-		public void writeExternal(ObjectOutput out) throws IOException {
-			out.writeByte(byteValue);
-			out.writeBoolean(booleanValue);
-			out.writeChar(charValue);
-			out.writeShort(shortValue);
-			out.writeInt(intValue);
-			out.writeFloat(floatValue);
-			out.writeLong(longValue);
-			out.writeDouble(doubleValue);
-		}
-		@Override
-		public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-			
-		}
-		
-	}
-	
+
 	private class JiagaraSerializationBenchmarkTestDriver implements SerializationBenchmarkTestDriver {
 		
 		@SuppressWarnings("unused")
@@ -179,6 +123,36 @@ public class SerializationBenchmarkTest implements Serializable {
 		@Override
 		public void serialize(Object o, OutputStream os) {
 			kryo.writeObject(new Output(os), o);
+		}
+		
+		@Override
+		public Object getObjectToSerialize() {
+			return new ClassToSerialize();
+		}	
+		
+	}
+	
+	private class AvroSerializationBenchmarkTestDriver implements SerializationBenchmarkTestDriver {
+		
+		private DatumWriter<ClassToSerialize> avroWriter;
+		
+		private AvroSerializationBenchmarkTestDriver() {
+			avroWriter = new ReflectDatumWriter<ClassToSerialize>(ClassToSerialize.class);
+		}
+		
+		@Override
+		public String getName() {
+			return "Avro Serializer";
+		}
+		
+		@Override
+		public void serialize(Object o, OutputStream os) {
+			try {
+				avroWriter.write((ClassToSerialize) o, EncoderFactory.get().binaryEncoder(os, null));
+			} 
+			catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		@Override

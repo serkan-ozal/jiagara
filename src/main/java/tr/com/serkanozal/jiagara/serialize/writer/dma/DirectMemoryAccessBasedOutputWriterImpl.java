@@ -31,33 +31,35 @@ import sun.misc.Unsafe;
 public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOutputWriter<DirectMemoryAccessBasedBuffer> 
 		implements DirectMemoryAccessBasedOutputWriter {
 
-	private long startAddress;
-	private Unsafe unsafe;
-	private int byteArrayBase;
-	private int byteArrayScale;
-	private int booleanArrayBase;
-	private int booleanArrayScale;
-	private int charArrayBase;
-	private int charArrayScale;
-	private int shortArrayBase;
-	private int shortArrayScale;
-	private int intArrayBase;
-	private int intArrayScale;
-	private int floatArrayBase;
-	private int floatArrayScale;
-	private int longArrayBase;
-	private int longArrayScale;
-	private int doubleArrayBase;
-	private int doubleArrayScale;
+	private static Unsafe unsafe;
+	private static int byteArrayBase;
+	private static int byteArrayScale;
+	private static int booleanArrayBase;
+	private static int booleanArrayScale;
+	private static int charArrayBase;
+	private static int charArrayScale;
+	private static int shortArrayBase;
+	private static int shortArrayScale;
+	private static int intArrayBase;
+	private static int intArrayScale;
+	private static int floatArrayBase;
+	private static int floatArrayScale;
+	private static int longArrayBase;
+	private static int longArrayScale;
+	private static int doubleArrayBase;
+	private static int doubleArrayScale;
 	@SuppressWarnings("unused")
-	private int objectArrayBase;
+	private static int objectArrayBase;
 	@SuppressWarnings("unused")
-	private int objectArrayScale;
+	private static int objectArrayScale;
 	
-	public DirectMemoryAccessBasedOutputWriterImpl(OutputStream os) {
-		super(os, new DirectMemoryAccessBasedBufferBuilder().build());
-		//////////////////////////////////////////////////////////////////
-		startAddress = JvmUtil.getArrayBaseAddress(bufferArray, byte.class);
+	private long startAddress;
+
+	static {
+		init();
+	}
+	
+	private static void init() {
 		unsafe = JvmUtil.getUnsafe();
 		//////////////////////////////////////////////////////////////////
 		byteArrayBase = unsafe.arrayBaseOffset(byte[].class);
@@ -87,6 +89,11 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 		objectArrayBase = unsafe.arrayBaseOffset(Object[].class);
 		objectArrayScale = unsafe.arrayIndexScale(Object[].class);
 		//////////////////////////////////////////////////////////////////
+	}
+	
+	public DirectMemoryAccessBasedOutputWriterImpl(OutputStream os) {
+		super(os, new DirectMemoryAccessBasedBufferBuilder().build());
+		startAddress = JvmUtil.getArrayBaseAddress(bufferArray, byte.class);
 	}
 	
 	@Override

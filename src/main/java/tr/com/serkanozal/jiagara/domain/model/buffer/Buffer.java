@@ -26,6 +26,7 @@ public class Buffer {
 	public static final int DEFAULT_BUFFER_SIZE = 4096;
 	
 	protected byte[] buffer;
+	protected int length;
 	protected int index;
 	protected BufferListener bufferListener;
 	
@@ -33,6 +34,7 @@ public class Buffer {
 		this.buffer = new byte[DEFAULT_BUFFER_SIZE];
 		this.index = 0;
 		this.bufferListener = bufferListener;
+		this.length = this.buffer.length;
 	}
 	
 	public Buffer(int size, BufferListener bufferListener) {
@@ -40,6 +42,7 @@ public class Buffer {
 		this.buffer = new byte[size];
 		this.index = 0;
 		this.bufferListener = bufferListener;
+		this.length = this.buffer.length;
 	}
 	
 	public Buffer(byte[] buffer, BufferListener bufferListener) {
@@ -47,12 +50,13 @@ public class Buffer {
 		this.buffer = buffer;
 		this.index = 0;
 		this.bufferListener = bufferListener;
+		this.length = this.buffer.length;
 	}
 	
 	public byte[] getBufferArray() {
 		return buffer;
 	}
-
+	
 	public int getIndex() {
 		return index;
 	}
@@ -66,7 +70,7 @@ public class Buffer {
 	}
 
 	public int getLength() {
-		return buffer.length;
+		return length;
 	}
 	
 	public boolean isEmpty() {
@@ -104,17 +108,20 @@ public class Buffer {
 	}
 	
 	public void forward(int length) {
-		AssertUtil.smaller(index + length, buffer.length, "Index+length must be smaller than $1 (length of buffer array): $0");
+		// TODO comment out for performance
+		//AssertUtil.smaller(index + length, buffer.length, "Index+length must be smaller than $1 (length of buffer array): $0");
 		index += length;
 	}
 	
 	public void forward(long length) {
-		AssertUtil.smaller(index + length, buffer.length, "Index+length must be smaller than $1 (length of buffer array): $0");
+		// TODO comment out for performance
+		//AssertUtil.smaller(index + length, buffer.length, "Index+length must be smaller than $1 (length of buffer array): $0");
 		index += length;
 	}
 	
 	public void move(int index) {
-		AssertUtil.smaller(index, buffer.length, "Index must be smaller than $1 (length of buffer array): $0");
+		// TODO comment out for performance
+		//AssertUtil.smaller(index, buffer.length, "Index must be smaller than $1 (length of buffer array): $0");
 		this.index = index;
 	}
 	
@@ -127,7 +134,7 @@ public class Buffer {
 	}
 	
 	public void checkCapacitiyAndHandle(int size) {
-		if (index + size >= buffer.length) {
+		if (index + size >= length) {
 			if (bufferListener != null) {
 				bufferListener.doFlush();
 				reset();
@@ -139,7 +146,7 @@ public class Buffer {
 	}
 	
 	public void checkCapacitiyAndHandle(long size) {
-		if (index + size >= buffer.length) {
+		if (index + size >= length) {
 			if (bufferListener != null) {
 				bufferListener.doFlush();
 				reset();

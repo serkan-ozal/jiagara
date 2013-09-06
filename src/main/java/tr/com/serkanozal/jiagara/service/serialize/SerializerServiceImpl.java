@@ -24,6 +24,7 @@ import java.util.Map;
 import tr.com.serkanozal.jiagara.exception.SerializationException;
 import tr.com.serkanozal.jiagara.serialize.Serializer;
 import tr.com.serkanozal.jiagara.serialize.SerializerFactory;
+import tr.com.serkanozal.jiagara.util.JvmUtil;
 
 /**
  * @author Serkan ÖZAL
@@ -31,6 +32,7 @@ import tr.com.serkanozal.jiagara.serialize.SerializerFactory;
 public class SerializerServiceImpl implements SerializerService {
 
 	private Map<Class<?>, Serializer<?>> cachedSerializers = new HashMap<Class<?>, Serializer<?>>();
+	private Map<Long, Serializer<?>> cachedSerializersByAddress = new HashMap<Long, Serializer<?>>();
 	
 	@SuppressWarnings("unchecked")
 	@Override
@@ -38,6 +40,19 @@ public class SerializerServiceImpl implements SerializerService {
 		Serializer<T> serializer = (Serializer<T>) cachedSerializers.get(clazz);
 		if (serializer == null) {
 			serializer = SerializerFactory.createSerializer(clazz);
+			cachedSerializers.put(clazz, serializer);
+		}
+		return serializer;
+	}
+	
+	@SuppressWarnings({ "unchecked", "unused" })
+	private <T> Serializer<T> getSerializer(T obj) {
+		long address = JvmUtil.addressOfClass(obj);
+		Serializer<T> serializer = (Serializer<T>) cachedSerializersByAddress.get(address);
+		if (serializer == null) {
+			Class<T> clazz = (Class<T>)obj.getClass();
+			serializer = SerializerFactory.createSerializer(clazz);
+			cachedSerializersByAddress.put(address, serializer);
 			cachedSerializers.put(clazz, serializer);
 		}
 		return serializer;

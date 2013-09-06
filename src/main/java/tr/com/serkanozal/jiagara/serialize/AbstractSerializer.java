@@ -17,7 +17,6 @@
 package tr.com.serkanozal.jiagara.serialize;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -35,9 +34,12 @@ public abstract class AbstractSerializer<T, O extends OutputWriter> implements S
 
 	protected static final Logger logger = LogUtil.getLogger();
 	
+	protected static ThreadLocal<OutputWriter> outputWriterThreadLocal = new ThreadLocal<OutputWriter>();
+	
 	protected Class<T> clazz;
 	protected FieldSerializerFactory<O> fieldSerializerFactory;
-	protected List<FieldSerializer<T, O>> fieldSerializers = new ArrayList<FieldSerializer<T, O>>(); 
+	protected FieldSerializer<T, O>[] fieldSerializers;
+	
 	
 	@SuppressWarnings("unchecked")
 	public AbstractSerializer(Class<T> clazz, FieldSerializerFactory<O> fieldSerializerFactory) {
@@ -45,8 +47,10 @@ public abstract class AbstractSerializer<T, O extends OutputWriter> implements S
 		this.fieldSerializerFactory = fieldSerializerFactory;
 		List<Field> fieldsSortedByName = ReflectionUtil.getAllFieldsSortedByName(clazz);
 		if (fieldsSortedByName != null) {
+			fieldSerializers = new FieldSerializer[fieldsSortedByName.size()];
+			int i = 0;
 			for (Field field : fieldsSortedByName) {
-				fieldSerializers.add((FieldSerializer<T, O>) fieldSerializerFactory.createFieldSerializer(field));
+				fieldSerializers[i++] = fieldSerializerFactory.createFieldSerializer(field);
 			}
 		}
 	}

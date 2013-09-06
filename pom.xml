@@ -26,6 +26,7 @@
 		<commons.lang.version>2.6</commons.lang.version>
 		
 		<kryo.version>2.21</kryo.version>
+		<avro.version>1.7.5</avro.version>
 		
 		<easymock.version>3.0</easymock.version>
 		<junit.version>4.8.2</junit.version>
@@ -129,6 +130,12 @@
 			<groupId>com.esotericsoftware.kryo</groupId>
 			<artifactId>kryo</artifactId>
 			<version>${kryo.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.avro</groupId>
+			<artifactId>avro</artifactId>
+			<version>${avro.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- ============================================ -->

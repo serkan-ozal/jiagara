@@ -46,6 +46,7 @@ public abstract class AbstractBufferedOutputWriter<B extends Buffer> implements 
 	@Override
 	public void release() {
 		doFlush();
+		buffer.reset();
 	}
 	
 	@Override

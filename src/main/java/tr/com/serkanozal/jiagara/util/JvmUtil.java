@@ -399,6 +399,27 @@ public class JvmUtil {
         return baseAddress + fieldOffset;
     }
     
+    @SuppressWarnings("deprecation")
+	public static long addressOfClass(Object o) {
+    	int addressSize = JvmUtil.getAddressSize();
+    	switch (addressSize) {
+	        case JvmUtil.SIZE_32_BIT:
+	            return JvmUtil.toNativeAddress(normalize(unsafe.getInt(o, JvmUtil.getClassDefPointerOffsetInObject())));
+	        case JvmUtil.SIZE_64_BIT:
+	        	int referenceSize = JvmUtil.getReferenceSize();
+            	switch (referenceSize) {
+                 	case JvmUtil.ADDRESSING_4_BYTE:
+                 		return JvmUtil.toNativeAddress(normalize(unsafe.getInt(o, JvmUtil.getClassDefPointerOffsetInObject())));
+                 	case JvmUtil.ADDRESSING_8_BYTE:
+                 		return JvmUtil.toNativeAddress(unsafe.getLong(o, JvmUtil.getClassDefPointerOffsetInObject())); 
+                 	default:    
+                        throw new AssertionError("Unsupported reference size: " + referenceSize);
+            	 }
+	        default: 	
+	        	throw new AssertionError("Unsupported address size: " + addressSize);	
+    	}	
+    }
+    
     public static long addressOfClass(Class<?> clazz) {
     	return getClassInfo(clazz).classAddress;
     }

@@ -41,18 +41,31 @@ public class DirectMemoryAccessBasedSerializer<T> extends AbstractSerializer<T, 
 	
 	@Override
 	public void serialize(T obj, OutputStream os) throws SerializationException {
+		DirectMemoryAccessBasedOutputWriter outputWriter = null;
 		try {
-			DirectMemoryAccessBasedOutputWriter outputWriter = 
+			outputWriter = (DirectMemoryAccessBasedOutputWriter)outputWriterThreadLocal.get();
+			if (outputWriter == null) {
+				outputWriter = 
 					DirectMemoryAccessBasedOutputWriterFactory.createDirectMemoryAccessBasedOutputWriter(os);
+				outputWriterThreadLocal.set(outputWriter);
+			}	
 			for (FieldSerializer<T, DirectMemoryAccessBasedOutputWriter> fieldSerializer : fieldSerializers) {
 				fieldSerializer.serializeField(obj, outputWriter);
 			}
-			outputWriter.release();
-			os.flush();
 		} 
 		catch (Throwable t) {
 			logger.error("Error occured while serialization", t);
 			throw new SerializationException("Error occured while serialization", t);
+		}
+		finally {
+			outputWriter.release();
+			try {
+				os.flush();
+			}
+			catch (Throwable t) {
+				logger.error("Error occured while flushing output stream", t);
+				throw new SerializationException("Error occured while flushing output stream", t);
+			}
 		}
 	}
 
