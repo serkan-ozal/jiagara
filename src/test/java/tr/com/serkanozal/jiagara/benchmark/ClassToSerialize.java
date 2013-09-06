@@ -16,19 +16,36 @@
 
 package tr.com.serkanozal.jiagara.benchmark;
 
+import java.security.SecureRandom;
+import java.util.Random;
+
 /**
  * @author Serkan ÖZAL
  */
-@SuppressWarnings({ "unused" })
 public class ClassToSerialize {
 
-	private byte byteValue = 1;
-	private boolean booleanValue = true;
-	private char charValue = 'X';
-	private short shortValue = 10;
-	private int intValue = 100;
-	private float floatValue = 200.0F;
-	private long longValue = 1000;
-	private double doubleValue = 2000.0;
+	private static final Random RANDOM = new SecureRandom();
+	
+	protected byte byteValue = 1;
+	protected boolean booleanValue = true;
+	protected char charValue = 'X';
+	protected short shortValue = 10;
+	protected int intValue = 100;
+	protected float floatValue = 200.0F;
+	protected long longValue = 1000;
+	protected double doubleValue = 2000.0;
+
+	@SuppressWarnings("unchecked")
+	public <T extends ClassToSerialize> T randomize() {
+		byteValue = (byte) RANDOM.nextInt(256);
+		booleanValue = RANDOM.nextBoolean();
+		charValue = (char) RANDOM.nextInt();
+		shortValue = (short) RANDOM.nextInt(65536);
+		intValue = RANDOM.nextInt();
+		floatValue = RANDOM.nextFloat();
+		longValue = RANDOM.nextLong();
+		doubleValue = RANDOM.nextDouble();
+		return (T) this;
+	}
 	
 }

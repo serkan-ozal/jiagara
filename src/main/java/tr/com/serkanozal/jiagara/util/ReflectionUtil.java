@@ -19,6 +19,7 @@ package tr.com.serkanozal.jiagara.util;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -83,6 +84,10 @@ public class ReflectionUtil {
 		createFields(superCls, fields, annotationFilter);
 		
 		for (Field f : cls.getDeclaredFields()) {
+			if (Modifier.isFinal(f.getModifiers())
+					|| Modifier.isStatic(f.getModifiers())
+					|| Modifier.isTransient(f.getModifiers()))
+				continue;
 			f.setAccessible(true);
 			if (annotationFilter == null) {
 				fields.add(f);
