@@ -18,6 +18,7 @@ package tr.com.serkanozal.jiagara.benchmark;
 
 import java.security.SecureRandom;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * @author Serkan ÖZAL
@@ -34,6 +35,8 @@ public class ClassToSerialize {
 	protected float floatValue = 200.0F;
 	protected long longValue = 1000;
 	protected double doubleValue = 2000.0;
+	protected String stringValue = "str";
+	protected EnumToSerialize enumValue;
 
 	@SuppressWarnings("unchecked")
 	public <T extends ClassToSerialize> T randomize() {
@@ -45,6 +48,8 @@ public class ClassToSerialize {
 		floatValue = RANDOM.nextFloat();
 		longValue = RANDOM.nextLong();
 		doubleValue = RANDOM.nextDouble();
+		stringValue = UUID.randomUUID().toString();
+		enumValue = EnumToSerialize.random();
 		return (T) this;
 	}
 	

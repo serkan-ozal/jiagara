@@ -64,30 +64,39 @@ public class ReflectionUtil {
 	
 	public static List<Field> getAllFields(Class<?> cls) {
 		List<Field> fields = new ArrayList<Field>();
-		createFields(cls, fields, null);
+		createFields(cls, fields, true, true, true, null);
+		return fields;
+	}
+	
+	public static List<Field> getAllSerializableFields(Class<?> cls) {
+		List<Field> fields = new ArrayList<Field>();
+		createFields(cls, fields, false, false, false, null);
 		return fields;
 	}
 
-	public static List<Field> getAllFields(Class<?> cls, Class<? extends Annotation> annotationFilter) {
+	public static List<Field> getAllFields(Class<?> cls, boolean canBeFinal, boolean canBeStatic, boolean canBeTransient,
+			Class<? extends Annotation> annotationFilter) {
 		List<Field> fields = new ArrayList<Field>();
-		createFields(cls, fields, annotationFilter);
+		createFields(cls, fields, canBeFinal, canBeStatic, canBeTransient, annotationFilter);
 		return fields;
 	}
 	
 	private static void createFields(Class<?> cls, List<Field> fields, 
+			boolean canBeFinal, boolean canBeStatic, boolean canBeTransient,
 			Class<? extends Annotation> annotationFilter) {
 		if (cls == null || cls.equals(Object.class)) {
 			return;
 		}
 		
 		Class<?> superCls = cls.getSuperclass();
-		createFields(superCls, fields, annotationFilter);
+		createFields(superCls, fields, canBeFinal, canBeStatic, canBeTransient, annotationFilter);
 		
 		for (Field f : cls.getDeclaredFields()) {
-			if (Modifier.isFinal(f.getModifiers())
-					|| Modifier.isStatic(f.getModifiers())
-					|| Modifier.isTransient(f.getModifiers()))
+			if ((Modifier.isFinal(f.getModifiers()) && !canBeFinal) ||
+				(Modifier.isStatic(f.getModifiers()) && !canBeStatic) ||
+				(Modifier.isTransient(f.getModifiers()) && !canBeTransient)) {
 				continue;
+			}	
 			f.setAccessible(true);
 			if (annotationFilter == null) {
 				fields.add(f);
@@ -115,9 +124,15 @@ public class ReflectionUtil {
 	public static List<Field> getAllFieldsSortedByName(Class<?> cls) {
 		return sortFieldsByName(getAllFields(cls));
 	}
+	
+	public static List<Field> getAllSerializableFieldsSortedByName(Class<?> cls) {
+		return sortFieldsByName(getAllSerializableFields(cls));
+	}
 
-	public static List<Field> getAllFieldsSortedByName(Class<?> cls, Class<? extends Annotation> annotationFilter) {
-		return sortFieldsByName(getAllFieldsSortedByName(cls, annotationFilter));
+	public static List<Field> getAllFieldsSortedByName(Class<?> cls,  boolean canBeFinal, 
+			boolean canBeStatic, boolean canBeTransient,
+			Class<? extends Annotation> annotationFilter) {
+		return sortFieldsByName(getAllFieldsSortedByName(cls, canBeFinal, canBeStatic, canBeTransient, annotationFilter));
 	}
 	
 	public static Method getMethod(Class<?> cls, String methodName) {

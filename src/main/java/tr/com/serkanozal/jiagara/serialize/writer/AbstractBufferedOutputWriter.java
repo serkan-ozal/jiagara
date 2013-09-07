@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import tr.com.serkanozal.jiagara.domain.model.buffer.Buffer;
 import tr.com.serkanozal.jiagara.exception.SerializationException;
 import tr.com.serkanozal.jiagara.util.JvmUtil;
+import tr.com.serkanozal.jiagara.util.SerDeConstants;
 
 /**
  * @author Serkan ÖZAL
@@ -154,12 +155,28 @@ public abstract class AbstractBufferedOutputWriter<B extends Buffer> implements 
 
 	@Override
 	public void write(String value) {
-		// TODO Implement write string
+		if (value == null) {
+			write(SerDeConstants.NULL_STRING_LENGTH);
+		}
+		else {
+			int length = value.length();
+			int size = (length * JvmUtil.CHAR_SIZE + JvmUtil.INT_SIZE);
+			buffer.checkCapacitiyAndHandle(size);
+			write(length);
+			for (int i = 0; i < length; i++) {
+				write(value.charAt(i));
+			}
+		}	
 	}
 	
 	@Override
 	public void write(Enum<?> value) {
-		// TODO Implement write enum
+		if (value == null) {
+			write(SerDeConstants.NULL_ENUM_ORDINAL);
+		}
+		else {
+			write(value.ordinal());
+		}
 	}
 
 	@Override
@@ -174,64 +191,115 @@ public abstract class AbstractBufferedOutputWriter<B extends Buffer> implements 
 	
 	@Override
 	public void write(byte[] array) {
-		for (byte value : array) {
-			write(value);
+		if (array == null) { 
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.BYTE_SIZE);
+			for (byte value : array) {
+				write(value);
+			}
+		}	
 	}
 
 	@Override
 	public void write(boolean[] array) {
-		for (boolean value : array) {
-			write(value);
+		if (array == null) { 
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.BOOLEAN_SIZE);
+			for (boolean value : array) {
+				write(value);
+			}
+		}	
 	}
 
 	@Override
 	public void write(char[] array) {
-		for (char value : array) {
-			write(value);
+		if (array == null) { 
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.CHAR_SIZE);
+			for (char value : array) {
+				write(value);
+			}
+		}	
 	}
 
 	@Override
 	public void write(short[] array) {
-		for (short value : array) {
-			write(value);
+		if (array == null) { 
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.SHORT_SIZE);
+			for (short value : array) {
+				write(value);
+			}
+		}	
 	}
 
 	@Override
 	public void write(int[] array) {
-		for (int value : array) {
-			write(value);
+		if (array == null) { 
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.INT_SIZE);
+			for (int value : array) {
+				write(value);
+			}
+		}	
 	}
 
 	@Override
 	public void write(float[] array) {
-		for (float value : array) {
-			write(value);
+		if (array == null) { 
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.FLOAT_SIZE);
+			for (float value : array) {
+				write(value);
+			}
+		}	
 	}
 
 	@Override
 	public void write(long[] array) {
-		for (long value : array) {
-			write(value);
+		if (array == null) { 
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.LONG_SIZE);
+			for (long value : array) {
+				write(value);
+			}
+		}	
 	}
 
 	@Override
 	public void write(double[] array) {
-		for (double value : array) {
-			write(value);
+		if (array == null) { 
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.DOUBLE_SIZE);
+			for (double value : array) {
+				write(value);
+			}
+		}	
 	}
 
 	@Override
 	public void write(Object[] array) {
-		for (Object value : array) {
-			write(value);
+		if (array == null) { 
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
+		}
+		else {
+			// TODO Implement write object array
 		}
 	}
 	

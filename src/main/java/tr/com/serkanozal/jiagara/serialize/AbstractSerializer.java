@@ -45,7 +45,7 @@ public abstract class AbstractSerializer<T, O extends OutputWriter> implements S
 	public AbstractSerializer(Class<T> clazz, FieldSerializerFactory<O> fieldSerializerFactory) {
 		this.clazz = clazz;
 		this.fieldSerializerFactory = fieldSerializerFactory;
-		List<Field> fieldsSortedByName = ReflectionUtil.getAllFieldsSortedByName(clazz);
+		List<Field> fieldsSortedByName = ReflectionUtil.getAllSerializableFieldsSortedByName(clazz);
 		if (fieldsSortedByName != null) {
 			fieldSerializers = new FieldSerializer[fieldsSortedByName.size()];
 			int i = 0;
