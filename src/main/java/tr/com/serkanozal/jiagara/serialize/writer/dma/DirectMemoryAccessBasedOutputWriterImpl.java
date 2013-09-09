@@ -101,7 +101,12 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	}
 	
 	public DirectMemoryAccessBasedOutputWriterImpl(OutputStream os) {
-		super(os, new DirectMemoryAccessBasedBufferBuilder().build());
+		this(os, new DirectMemoryAccessBasedBufferBuilder().build());
+	}
+	
+	public DirectMemoryAccessBasedOutputWriterImpl(OutputStream os, DirectMemoryAccessBasedBuffer buffer) {
+		super(os, buffer);
+		buffer.setBufferListener(this);
 		startAddress = JvmUtil.getArrayBaseAddress(bufferArray, byte.class);
 	}
 	
@@ -181,7 +186,7 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 			unsafe.copyMemory(str, countOffsetInString, bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), JvmUtil.INT_SIZE);
 			buffer.forward(JvmUtil.INT_SIZE);
 			unsafe.copyMemory(str, valueArrayOffsetInString, bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), size);
-			buffer.forward(totalSize);
+			buffer.forward(size);
 		}	
 	}
 	
@@ -203,274 +208,138 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 
 	@Override
 	public void writeByteArray(Object obj, long offset) {
-		switch (JvmUtil.getReferenceSize()) {
-			case JvmUtil.ADDRESSING_4_BYTE:
-				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
-				byte[] array1 = (byte[])unsafe.getObject(obj, offset);
-				if (array1 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size1 = byteArrayBase + (array1.length * byteArrayScale);
-					buffer.checkCapacitiyAndHandle(size1);
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-					buffer.forward(size1);
-				}	
-				break;
-			case JvmUtil.ADDRESSING_8_BYTE:
-				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
-				byte[] array2 = (byte[])unsafe.getObject(obj, offset);
-				if (array2 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size2 = byteArrayBase + (array2.length * byteArrayScale);
-					buffer.checkCapacitiyAndHandle(size2);
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-					buffer.forward(size2);
-				}	
-				break;
-			default:
-				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
+		int arrayLengthSize = JvmUtil.arrayLengthSize();
+		byte[] array = (byte[])unsafe.getObject(obj, offset);
+		if (array == null) {
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			long size = arrayLengthSize + (array.length * byteArrayScale);
+			buffer.checkCapacitiyAndHandle(size);
+			unsafe.copyMemory(array, byteArrayBase - arrayLengthSize, 
+							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
+							  size);
+			buffer.forward(size);
+		}	
 	}
 	
 	@Override
 	public void writeBooleanArray(Object obj, long offset) {
-		switch (JvmUtil.getReferenceSize()) {
-			case JvmUtil.ADDRESSING_4_BYTE:
-				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
-				boolean[] array1 = (boolean[])unsafe.getObject(obj, offset);
-				if (array1 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size1 = booleanArrayBase + (array1.length * booleanArrayScale);
-					buffer.checkCapacitiyAndHandle(size1);
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-					buffer.forward(size1);
-				}	
-				break;
-			case JvmUtil.ADDRESSING_8_BYTE:
-				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
-				boolean[] array2 = (boolean[])unsafe.getObject(obj, offset);
-				if (array2 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size2 =  booleanArrayBase + (array2.length * booleanArrayScale);
-					buffer.checkCapacitiyAndHandle(size2);
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-					buffer.forward(size2);
-				}	
-				break;
-			default:
-				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
+		int arrayLengthSize = JvmUtil.arrayLengthSize();
+		boolean[] array = (boolean[])unsafe.getObject(obj, offset);
+		if (array == null) {
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			long size = arrayLengthSize + (array.length * booleanArrayScale);
+			buffer.checkCapacitiyAndHandle(size);
+			unsafe.copyMemory(array, booleanArrayBase - arrayLengthSize, 
+							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
+							  size);
+			buffer.forward(size);
+		}	
 	}
 	
 	@Override
 	public void writeCharacterArray(Object obj, long offset) {
-		switch (JvmUtil.getReferenceSize()) {
-			case JvmUtil.ADDRESSING_4_BYTE:
-				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
-				char[] array1 = (char[])unsafe.getObject(obj, offset);
-				if (array1 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size1 = charArrayBase + (array1.length * charArrayScale);
-					buffer.checkCapacitiyAndHandle(size1);
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-					buffer.forward(size1);
-				}	
-				break;
-			case JvmUtil.ADDRESSING_8_BYTE:
-				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
-				char[] array2 = (char[])unsafe.getObject(obj, offset);
-				if (array2 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size2 = charArrayBase + (array2.length * charArrayScale);
-					buffer.checkCapacitiyAndHandle(size2);
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-					buffer.forward(size2);
-				}	
-				break;
-			default:
-				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
+		int arrayLengthSize = JvmUtil.arrayLengthSize();
+		char[] array = (char[])unsafe.getObject(obj, offset);
+		if (array == null) {
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			long size = arrayLengthSize + (array.length * charArrayScale);
+			buffer.checkCapacitiyAndHandle(size);
+			unsafe.copyMemory(array, charArrayBase - arrayLengthSize, 
+							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
+							  size);
+			buffer.forward(size);
+		}	
 	}
 	
 	@Override
 	public void writeShortArray(Object obj, long offset) {
-		switch (JvmUtil.getReferenceSize()) {
-			case JvmUtil.ADDRESSING_4_BYTE:
-				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
-				short[] array1 = (short[])unsafe.getObject(obj, offset);
-				if (array1 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size1 = shortArrayBase + (array1.length * shortArrayScale);
-					buffer.checkCapacitiyAndHandle(size1);
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-					buffer.forward(size1);
-				}	
-				break;
-			case JvmUtil.ADDRESSING_8_BYTE:
-				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
-				short[] array2 = (short[])unsafe.getObject(obj, offset);
-				if (array2 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size2 = shortArrayBase + (array2.length * shortArrayScale);
-					buffer.checkCapacitiyAndHandle(size2);
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-					buffer.forward(size2);
-				}	
-				break;
-			default:
-				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
+		int arrayLengthSize = JvmUtil.arrayLengthSize();
+		short[] array = (short[])unsafe.getObject(obj, offset);
+		if (array == null) {
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			long size = arrayLengthSize + (array.length * shortArrayScale);
+			buffer.checkCapacitiyAndHandle(size);
+			unsafe.copyMemory(array, shortArrayBase - arrayLengthSize, 
+							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
+							  size);
+			buffer.forward(size);
+		}	
 	}
 	
 	@Override
 	public void writeIntegerArray(Object obj, long offset) {
-		switch (JvmUtil.getReferenceSize()) {
-			case JvmUtil.ADDRESSING_4_BYTE:
-				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
-				int[] array1 = (int[])unsafe.getObject(obj, offset);
-				if (array1 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size1 = intArrayBase + (array1.length * intArrayScale);
-					buffer.checkCapacitiyAndHandle(size1);
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-					buffer.forward(size1);
-				}	
-				break;
-			case JvmUtil.ADDRESSING_8_BYTE:
-				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
-				int[] array2 = (int[])unsafe.getObject(obj, offset);
-				if (array2 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size2 = intArrayBase + (array2.length * intArrayScale);
-					buffer.checkCapacitiyAndHandle(size2);
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-					buffer.forward(size2);
-				}	
-				break;
-			default:
-				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
+		int arrayLengthSize = JvmUtil.arrayLengthSize();
+		int[] array = (int[])unsafe.getObject(obj, offset);
+		if (array == null) {
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			long size = arrayLengthSize + (array.length * intArrayScale);
+			buffer.checkCapacitiyAndHandle(size);
+			unsafe.copyMemory(array, intArrayBase - arrayLengthSize, 
+							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
+							  size);
+			buffer.forward(size);
+		}	
 	}
 	
 	@Override
 	public void writeFloatArray(Object obj, long offset) {
-		switch (JvmUtil.getReferenceSize()) {
-			case JvmUtil.ADDRESSING_4_BYTE:
-				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
-				float[] array1 = (float[])unsafe.getObject(obj, offset);
-				if (array1 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size1 = floatArrayBase + (array1.length * floatArrayScale);
-					buffer.checkCapacitiyAndHandle(size1);
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-					buffer.forward(size1);
-				}	
-				break;
-			case JvmUtil.ADDRESSING_8_BYTE:
-				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
-				float[] array2 = (float[])unsafe.getObject(obj, offset);
-				if (array2 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size2 =  floatArrayBase + (array2.length * floatArrayScale);
-					buffer.checkCapacitiyAndHandle(size2);
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-					buffer.forward(size2);
-				}	
-				break;
-			default:
-				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
+		int arrayLengthSize = JvmUtil.arrayLengthSize();
+		float[] array = (float[])unsafe.getObject(obj, offset);
+		if (array == null) {
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			long size = arrayLengthSize + (array.length * floatArrayScale);
+			buffer.checkCapacitiyAndHandle(size);
+			unsafe.copyMemory(array, floatArrayBase - arrayLengthSize, 
+							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
+							  size);
+			buffer.forward(size);
+		}	
 	}
 	
 	@Override
 	public void writeLongArray(Object obj, long offset) {
-		switch (JvmUtil.getReferenceSize()) {
-			case JvmUtil.ADDRESSING_4_BYTE:
-				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
-				long[] array1 = (long[])unsafe.getObject(obj, offset);
-				if (array1 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size1 = longArrayBase + (array1.length * longArrayScale);
-					buffer.checkCapacitiyAndHandle(size1);
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-					buffer.forward(size1);
-				}	
-				break;
-			case JvmUtil.ADDRESSING_8_BYTE:
-				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
-				long[] array2 = (long[])unsafe.getObject(obj, offset);
-				if (array2 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size2 = longArrayBase + (array2.length * longArrayScale);
-					buffer.checkCapacitiyAndHandle(size2);
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-					buffer.forward(size2);
-				}	
-				break;
-			default:
-				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
+		int arrayLengthSize = JvmUtil.arrayLengthSize();
+		long[] array = (long[])unsafe.getObject(obj, offset);
+		if (array == null) {
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			long size = arrayLengthSize + (array.length * longArrayScale);
+			buffer.checkCapacitiyAndHandle(size);
+			unsafe.copyMemory(array, longArrayBase - arrayLengthSize, 
+							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
+							  size);
+			buffer.forward(size);
+		}	
 	}
 	
 	@Override
 	public void writeDoubleArray(Object obj, long offset) {
-		switch (JvmUtil.getReferenceSize()) {
-			case JvmUtil.ADDRESSING_4_BYTE:
-				long arrayAddress1 = JvmUtil.toNativeAddress(unsafe.getInt(obj, offset));
-				double[] array1 = (double[])unsafe.getObject(obj, offset);
-				if (array1 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size1 = doubleArrayBase + (array1.length * doubleArrayScale);
-					buffer.checkCapacitiyAndHandle(size1);
-					unsafe.copyMemory(arrayAddress1, startAddress + buffer.getIndex(), size1);
-					buffer.forward(size1);
-				}	
-				break;
-			case JvmUtil.ADDRESSING_8_BYTE:
-				long arrayAddress2 = JvmUtil.toNativeAddress(unsafe.getLong(obj, offset));
-				double[] array2 = (double[])unsafe.getObject(obj, offset);
-				if (array2 == null) {
-					write(SerDeConstants.NULL_ARRAY_LENGTH);
-				}
-				else {
-					long size2 = doubleArrayBase + (array2.length * doubleArrayScale);
-					buffer.checkCapacitiyAndHandle(size2);
-					unsafe.copyMemory(arrayAddress2, startAddress + buffer.getIndex(), size2);
-					buffer.forward(size2);
-				}	
-				break;
-			default:
-				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
+		int arrayLengthSize = JvmUtil.arrayLengthSize();
+		double[] array = (double[])unsafe.getObject(obj, offset);
+		if (array == null) {
+			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
+		else {
+			long size = arrayLengthSize + (array.length * doubleArrayScale);
+			buffer.checkCapacitiyAndHandle(size);
+			unsafe.copyMemory(array, doubleArrayBase - arrayLengthSize, 
+							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
+							  size);
+			buffer.forward(size);
+		}	
 	}
 	
 	@Override
@@ -549,7 +418,7 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 			unsafe.copyMemory(address + countOffsetInString, startAddress + buffer.getIndex(), JvmUtil.INT_SIZE);
 			buffer.forward(JvmUtil.INT_SIZE);
 			unsafe.copyMemory(address + countOffsetInString, startAddress + buffer.getIndex(), size);
-			buffer.forward(totalSize);
+			buffer.forward(size);
 		}	
 	}
 	

@@ -17,14 +17,20 @@
 package tr.com.serkanozal.jiagara.serialize;
 
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import tr.com.serkanozal.jiagara.exception.SerializationException;
+import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
 
 /**
  * @author Serkan ÖZAL
  */
 public interface Serializer<T> {
 
+	Map<OutputStream, OutputWriter> OUTPUT_WRITER_MAP = new HashMap<OutputStream, OutputWriter>();
+	
 	void serialize(T obj, OutputStream os) throws SerializationException;
+	void release(OutputStream os) throws SerializationException;
 	
 }

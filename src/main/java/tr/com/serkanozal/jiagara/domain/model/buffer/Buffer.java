@@ -137,11 +137,11 @@ public class Buffer {
 		if (index + size >= length) {
 			if (bufferListener != null) {
 				bufferListener.doFlush();
-				reset();
 			}
 			else {
 				// TODO Expand buffer
 			}
+			reset();
 		}
 	}
 	
@@ -149,11 +149,11 @@ public class Buffer {
 		if (index + size >= length) {
 			if (bufferListener != null) {
 				bufferListener.doFlush();
-				reset();
 			}
 			else {
 				// TODO Expand buffer
 			}
+			reset();
 		}
 	}
 	

@@ -87,7 +87,7 @@ public abstract class AbstractBufferedOutputWriter<B extends Buffer> implements 
 		int position = buffer.getIndex();
 		bufferArray[position++] = (byte)(value >> 8);
 		bufferArray[position++] = (byte)value;
-		buffer.forward(position);
+		buffer.move(position);
 	}
 
 	@Override
@@ -96,7 +96,7 @@ public abstract class AbstractBufferedOutputWriter<B extends Buffer> implements 
 		int position = buffer.getIndex();
 		bufferArray[position++] = (byte)(value >> 8);
 		bufferArray[position++] = (byte)value;
-		buffer.forward(position);
+		buffer.move(position);
 	}
 
 	@Override
@@ -107,7 +107,7 @@ public abstract class AbstractBufferedOutputWriter<B extends Buffer> implements 
 		bufferArray[position++] = (byte)(value >> 16);
 		bufferArray[position++] = (byte)(value >> 8);
 		bufferArray[position++] = (byte)value;
-		buffer.forward(position);	
+		buffer.move(position);	
 	}
 
 	@Override
@@ -119,7 +119,7 @@ public abstract class AbstractBufferedOutputWriter<B extends Buffer> implements 
 		bufferArray[position++] = (byte)(rawValue >> 16);
 		bufferArray[position++] = (byte)(rawValue >> 8);
 		bufferArray[position++] = (byte)rawValue;
-		buffer.forward(position);
+		buffer.move(position);
 	}
 
 	@Override
@@ -134,7 +134,7 @@ public abstract class AbstractBufferedOutputWriter<B extends Buffer> implements 
 		bufferArray[position++] = (byte)(value >> 16);
 		bufferArray[position++] = (byte)(value >> 8);
 		bufferArray[position++] = (byte)value;
-		buffer.forward(position);
+		buffer.move(position);
 	}
 
 	@Override
@@ -150,7 +150,7 @@ public abstract class AbstractBufferedOutputWriter<B extends Buffer> implements 
 		bufferArray[position++] = (byte)(rawValue >> 16);
 		bufferArray[position++] = (byte)(rawValue >> 8);
 		bufferArray[position++] = (byte)value;
-		buffer.forward(position);
+		buffer.move(position);
 	}
 
 	@Override

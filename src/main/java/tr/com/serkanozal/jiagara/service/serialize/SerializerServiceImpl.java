@@ -21,16 +21,22 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import tr.com.serkanozal.jiagara.exception.SerializationException;
 import tr.com.serkanozal.jiagara.serialize.Serializer;
 import tr.com.serkanozal.jiagara.serialize.SerializerFactory;
+import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
 import tr.com.serkanozal.jiagara.util.JvmUtil;
+import tr.com.serkanozal.jiagara.util.LogUtil;
 
 /**
  * @author Serkan ÖZAL
  */
 public class SerializerServiceImpl implements SerializerService {
 
+	private static final Logger logger = LogUtil.getLogger();
+	
 	private Map<Class<?>, Serializer<?>> cachedSerializers = new HashMap<Class<?>, Serializer<?>>();
 	private Map<Long, Serializer<?>> cachedSerializersByAddress = new HashMap<Long, Serializer<?>>();
 	
@@ -62,8 +68,25 @@ public class SerializerServiceImpl implements SerializerService {
 	@Override
 	public <T> void serialize(T obj, OutputStream os) throws SerializationException {
 		if (obj != null) {
-			getSerializer((Class<T>)obj.getClass()).serialize(obj, os);
+			Serializer<T> serializer = getSerializer((Class<T>)obj.getClass());
+			serializer.serialize(obj, os);
 		}	
+	}
+	
+	@Override
+	public void release(OutputStream os) throws SerializationException {
+		try {
+			OutputWriter outputWriter = Serializer.OUTPUT_WRITER_MAP.get(os);
+			if (outputWriter != null) {
+				outputWriter.release();
+				Serializer.OUTPUT_WRITER_MAP.remove(os);
+			}
+			os.flush();
+		}
+		catch (Throwable t) {
+			logger.error("Error occured while releasing output stream", t);
+			throw new SerializationException("Error occured while releasing output stream", t);
+		}
 	}
 	
 }

@@ -16,11 +16,13 @@
 
 package tr.com.serkanozal.jiagara.serialize;
 
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import tr.com.serkanozal.jiagara.exception.SerializationException;
 import tr.com.serkanozal.jiagara.serialize.field.FieldSerializer;
 import tr.com.serkanozal.jiagara.serialize.field.FieldSerializerFactory;
 import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
@@ -33,13 +35,10 @@ import tr.com.serkanozal.jiagara.util.ReflectionUtil;
 public abstract class AbstractSerializer<T, O extends OutputWriter> implements Serializer<T> {
 
 	protected static final Logger logger = LogUtil.getLogger();
-	
-	protected static ThreadLocal<OutputWriter> outputWriterThreadLocal = new ThreadLocal<OutputWriter>();
-	
+
 	protected Class<T> clazz;
 	protected FieldSerializerFactory<O> fieldSerializerFactory;
 	protected FieldSerializer<T, O>[] fieldSerializers;
-	
 	
 	@SuppressWarnings("unchecked")
 	public AbstractSerializer(Class<T> clazz, FieldSerializerFactory<O> fieldSerializerFactory) {
@@ -52,6 +51,23 @@ public abstract class AbstractSerializer<T, O extends OutputWriter> implements S
 			for (Field field : fieldsSortedByName) {
 				fieldSerializers[i++] = fieldSerializerFactory.createFieldSerializer(field);
 			}
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public void release(OutputStream os) throws SerializationException {
+		try {
+			O outputWriter = (O) OUTPUT_WRITER_MAP.get(os);
+			if (outputWriter != null) {
+				outputWriter.release();
+				OUTPUT_WRITER_MAP.remove(os);
+			}
+			os.flush();
+		}
+		catch (Throwable t) {
+			logger.error("Error occured while releasing output stream", t);
+			throw new SerializationException("Error occured while releasing output stream", t);
 		}
 	}
 	

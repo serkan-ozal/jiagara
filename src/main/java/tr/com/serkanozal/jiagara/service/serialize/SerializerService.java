@@ -28,5 +28,6 @@ public interface SerializerService {
 
 	<T> Serializer<T> getSerializer(Class<T> clazz);
 	<T> void serialize(T obj, OutputStream os) throws SerializationException;
+	void release(OutputStream os) throws SerializationException;
 	
 }

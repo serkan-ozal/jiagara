@@ -36,6 +36,40 @@ public class ExternalizableClassToSerialize extends ClassToSerialize implements 
 		out.writeFloat(floatValue);
 		out.writeLong(longValue);
 		out.writeDouble(doubleValue);
+		out.writeBytes(stringValue);
+		out.writeInt(enumValue.ordinal());
+		out.writeInt(byteArrayValue.length);
+		for (byte b : byteArrayValue) {
+			out.writeByte(b);
+		}
+		out.writeInt(booleanArrayValue.length);
+		for (boolean b : booleanArrayValue) {
+			out.writeBoolean(b);
+		}
+		out.writeInt(charArrayValue.length);
+		for (char c : charArrayValue) {
+			out.writeChar(c);
+		}
+		out.writeInt(shortArrayValue.length);
+		for (short s : shortArrayValue) {
+			out.writeShort(s);
+		}
+		out.writeInt(intArrayValue.length);
+		for (int i : intArrayValue) {
+			out.writeInt(i);
+		}
+		out.writeInt(floatArrayValue.length);
+		for (float f : floatArrayValue) {
+			out.writeFloat(f);
+		}
+		out.writeInt(longArrayValue.length);
+		for (long l : longArrayValue) {
+			out.writeLong(l);
+		}
+		out.writeInt(doubleArrayValue.length);
+		for (double d : doubleArrayValue) {
+			out.writeDouble(d);
+		}
 	}
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
