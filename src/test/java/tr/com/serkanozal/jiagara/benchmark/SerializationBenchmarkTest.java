@@ -50,7 +50,7 @@ import com.esotericsoftware.kryo.io.Output;
 public class SerializationBenchmarkTest implements Serializable {
 
 	private static final int PRE_SERIALIZATION_COUNT = 1000;
-	private static final int SERIALIZATION_COUNT = 25000;
+	private static final int SERIALIZATION_COUNT = 10000;
 	private static final int ROUND_COUNT = 10;
 	private static final boolean WARM_UP = true;
 	
