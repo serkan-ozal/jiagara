@@ -16,6 +16,7 @@
 
 package tr.com.serkanozal.jiagara.benchmark;
 
+import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.Random;
 import java.util.UUID;
@@ -23,7 +24,8 @@ import java.util.UUID;
 /**
  * @author Serkan ÖZAL
  */
-public class ClassToSerialize {
+@SuppressWarnings("serial")
+public class ClassToSerialize implements Serializable {
 
 	private static final Random RANDOM = new SecureRandom();
 	private static final int ARRAY_LENGTH = 50;

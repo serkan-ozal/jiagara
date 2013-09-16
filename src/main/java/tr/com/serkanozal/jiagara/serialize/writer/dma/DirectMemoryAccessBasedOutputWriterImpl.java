@@ -50,13 +50,23 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	private static int longArrayScale;
 	private static int doubleArrayBase;
 	private static int doubleArrayScale;
-	@SuppressWarnings("unused")
 	private static int objectArrayBase;
 	@SuppressWarnings("unused")
 	private static int objectArrayScale;
 	private static long countOffsetInString;
 	private static long valueArrayOffsetInString;
 	private static long ordinalOffsetInEnum;
+	private static int arrayLengthSize;
+	private static long byteArrayCopyStartOffset;
+	private static long booleanArrayCopyStartOffset;
+	private static long charArrayCopyStartOffset;
+	private static long shortArrayCopyStartOffset;
+	private static long intArrayCopyStartOffset;
+	private static long floatArrayCopyStartOffset;
+	private static long longArrayCopyStartOffset;
+	private static long doubleArrayCopyStartOffset;
+	@SuppressWarnings("unused")
+	private static long objectArrayCopyStartOffset;
 	
 	private long startAddress;
 
@@ -98,6 +108,18 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 		countOffsetInString = unsafe.objectFieldOffset(ReflectionUtil.getField(String.class, "count"));
 		//////////////////////////////////////////////////////////////////	
 		ordinalOffsetInEnum = unsafe.objectFieldOffset(ReflectionUtil.getField(Enum.class, "ordinal"));
+		//////////////////////////////////////////////////////////////////	
+		arrayLengthSize = JvmUtil.arrayLengthSize();
+		//////////////////////////////////////////////////////////////////		
+		byteArrayCopyStartOffset = byteArrayBase - arrayLengthSize;
+		booleanArrayCopyStartOffset = booleanArrayBase - arrayLengthSize;
+		charArrayCopyStartOffset = charArrayBase - arrayLengthSize;
+		shortArrayCopyStartOffset = shortArrayBase - arrayLengthSize;
+		intArrayCopyStartOffset = intArrayBase - arrayLengthSize;
+		floatArrayCopyStartOffset = floatArrayBase - arrayLengthSize;
+		longArrayCopyStartOffset = longArrayBase - arrayLengthSize;
+		doubleArrayCopyStartOffset = doubleArrayBase - arrayLengthSize;
+		objectArrayCopyStartOffset = objectArrayBase - arrayLengthSize;
 	}
 	
 	public DirectMemoryAccessBasedOutputWriterImpl(OutputStream os) {
@@ -208,7 +230,6 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 
 	@Override
 	public void writeByteArray(Object obj, long offset) {
-		int arrayLengthSize = JvmUtil.arrayLengthSize();
 		byte[] array = (byte[])unsafe.getObject(obj, offset);
 		if (array == null) {
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
@@ -216,7 +237,7 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 		else {
 			long size = arrayLengthSize + (array.length * byteArrayScale);
 			buffer.checkCapacitiyAndHandle(size);
-			unsafe.copyMemory(array, byteArrayBase - arrayLengthSize, 
+			unsafe.copyMemory(array, byteArrayCopyStartOffset, 
 							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
 							  size);
 			buffer.forward(size);
@@ -225,7 +246,6 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	
 	@Override
 	public void writeBooleanArray(Object obj, long offset) {
-		int arrayLengthSize = JvmUtil.arrayLengthSize();
 		boolean[] array = (boolean[])unsafe.getObject(obj, offset);
 		if (array == null) {
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
@@ -233,7 +253,7 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 		else {
 			long size = arrayLengthSize + (array.length * booleanArrayScale);
 			buffer.checkCapacitiyAndHandle(size);
-			unsafe.copyMemory(array, booleanArrayBase - arrayLengthSize, 
+			unsafe.copyMemory(array, booleanArrayCopyStartOffset, 
 							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
 							  size);
 			buffer.forward(size);
@@ -242,7 +262,6 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	
 	@Override
 	public void writeCharacterArray(Object obj, long offset) {
-		int arrayLengthSize = JvmUtil.arrayLengthSize();
 		char[] array = (char[])unsafe.getObject(obj, offset);
 		if (array == null) {
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
@@ -250,7 +269,7 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 		else {
 			long size = arrayLengthSize + (array.length * charArrayScale);
 			buffer.checkCapacitiyAndHandle(size);
-			unsafe.copyMemory(array, charArrayBase - arrayLengthSize, 
+			unsafe.copyMemory(array, charArrayCopyStartOffset, 
 							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
 							  size);
 			buffer.forward(size);
@@ -259,7 +278,6 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	
 	@Override
 	public void writeShortArray(Object obj, long offset) {
-		int arrayLengthSize = JvmUtil.arrayLengthSize();
 		short[] array = (short[])unsafe.getObject(obj, offset);
 		if (array == null) {
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
@@ -267,7 +285,7 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 		else {
 			long size = arrayLengthSize + (array.length * shortArrayScale);
 			buffer.checkCapacitiyAndHandle(size);
-			unsafe.copyMemory(array, shortArrayBase - arrayLengthSize, 
+			unsafe.copyMemory(array, shortArrayCopyStartOffset, 
 							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
 							  size);
 			buffer.forward(size);
@@ -276,7 +294,6 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	
 	@Override
 	public void writeIntegerArray(Object obj, long offset) {
-		int arrayLengthSize = JvmUtil.arrayLengthSize();
 		int[] array = (int[])unsafe.getObject(obj, offset);
 		if (array == null) {
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
@@ -284,7 +301,7 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 		else {
 			long size = arrayLengthSize + (array.length * intArrayScale);
 			buffer.checkCapacitiyAndHandle(size);
-			unsafe.copyMemory(array, intArrayBase - arrayLengthSize, 
+			unsafe.copyMemory(array, intArrayCopyStartOffset, 
 							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
 							  size);
 			buffer.forward(size);
@@ -293,7 +310,6 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	
 	@Override
 	public void writeFloatArray(Object obj, long offset) {
-		int arrayLengthSize = JvmUtil.arrayLengthSize();
 		float[] array = (float[])unsafe.getObject(obj, offset);
 		if (array == null) {
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
@@ -301,7 +317,7 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 		else {
 			long size = arrayLengthSize + (array.length * floatArrayScale);
 			buffer.checkCapacitiyAndHandle(size);
-			unsafe.copyMemory(array, floatArrayBase - arrayLengthSize, 
+			unsafe.copyMemory(array, floatArrayCopyStartOffset, 
 							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
 							  size);
 			buffer.forward(size);
@@ -310,7 +326,6 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	
 	@Override
 	public void writeLongArray(Object obj, long offset) {
-		int arrayLengthSize = JvmUtil.arrayLengthSize();
 		long[] array = (long[])unsafe.getObject(obj, offset);
 		if (array == null) {
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
@@ -318,7 +333,7 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 		else {
 			long size = arrayLengthSize + (array.length * longArrayScale);
 			buffer.checkCapacitiyAndHandle(size);
-			unsafe.copyMemory(array, longArrayBase - arrayLengthSize, 
+			unsafe.copyMemory(array, longArrayCopyStartOffset, 
 							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
 							  size);
 			buffer.forward(size);
@@ -327,7 +342,6 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	
 	@Override
 	public void writeDoubleArray(Object obj, long offset) {
-		int arrayLengthSize = JvmUtil.arrayLengthSize();
 		double[] array = (double[])unsafe.getObject(obj, offset);
 		if (array == null) {
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
@@ -335,7 +349,7 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 		else {
 			long size = arrayLengthSize + (array.length * doubleArrayScale);
 			buffer.checkCapacitiyAndHandle(size);
-			unsafe.copyMemory(array, doubleArrayBase - arrayLengthSize, 
+			unsafe.copyMemory(array, doubleArrayCopyStartOffset, 
 							  bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), 
 							  size);
 			buffer.forward(size);
@@ -443,9 +457,9 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 		long arrayIndexStartAddress = arrayStartAddress + arrayBaseOffset;
 		switch (JvmUtil.getReferenceSize()) {
 			case JvmUtil.ADDRESSING_4_BYTE:
-				return unsafe.getInt(arrayIndexStartAddress - JvmUtil.arrayLengthSize());
+				return unsafe.getInt(arrayIndexStartAddress - arrayLengthSize);
 			case JvmUtil.ADDRESSING_8_BYTE:
-				return (int)unsafe.getLong(arrayIndexStartAddress - JvmUtil.arrayLengthSize());
+				return (int)unsafe.getLong(arrayIndexStartAddress - arrayLengthSize);
 			default:
 				throw new AssertionError("Unsupported reference size: " + JvmUtil.getReferenceSize()); 
 		}

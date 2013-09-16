@@ -49,11 +49,12 @@ import com.esotericsoftware.kryo.io.Output;
 // -XX:PermSize=512M -XX:MaxPermSize=1G -Xms1G -Xmx2G
 public class SerializationBenchmarkTest implements Serializable {
 
-	private static final int PRE_SERIALIZATION_COUNT = 10000;
-	private static final int SERIALIZATION_COUNT = 10000;
+	private static final int PRE_SERIALIZATION_COUNT = 1000;
+	private static final int SERIALIZATION_COUNT = 25000;
 	private static final int ROUND_COUNT = 10;
+	private static final boolean WARM_UP = true;
 	
-	//@Test
+	@Test
 	public void runSerializationBenchmarkTestDrivers() {
 		try {
 			JvmUtil.info();
@@ -66,11 +67,10 @@ public class SerializationBenchmarkTest implements Serializable {
 			serializationBenchmarkTestDrivers[4] = new CustomSerializationBenchmarkTestDriver();
 			long[][] results = new long[serializationBenchmarkTestDrivers.length][ROUND_COUNT];
 			
-			for (int run = 0; run < results[0].length; run++) {
-				System.out.println("Round " + (run + 1) + "/" + results[0].length + " starts...");
+			if (WARM_UP) {
 				for (int index = 0; index < serializationBenchmarkTestDrivers.length; index++) {
 					SerializationBenchmarkTestDriver driver = serializationBenchmarkTestDrivers[index];
-					
+
 					ByteArrayOutputStream bos;
 					long start, finish;
 					
@@ -81,17 +81,32 @@ public class SerializationBenchmarkTest implements Serializable {
 					Thread.sleep(2000);
 	
 					System.gc();
+					
+					Object objArray[] = new Object[SERIALIZATION_COUNT];
+					for (int i = 0; i < SERIALIZATION_COUNT; i++) {
+						objArray[i] = driver.getObjectToSerialize();
+					}
 	
 					System.out.println("Warmup " + driver.getName() + " ...");
 					bos = new ByteArrayOutputStream();
 					start = System.nanoTime();
-					for (int i = 0; i < PRE_SERIALIZATION_COUNT; i++) {
-						driver.serialize(driver.getObjectToSerialize(), bos);
+					for (int i = 0; i < SERIALIZATION_COUNT; i++) {
+						driver.serialize(objArray[i], bos);
 					}
 					finish = System.nanoTime();
 					System.out.println("Warmup for " + driver.getName() + " executed " + PRE_SERIALIZATION_COUNT + 
 							           " times in " + TimeUnit.NANOSECONDS.toMillis(finish - start) + " milliseconds ...");
-	
+				}
+			}
+			
+			for (int run = 0; run < results[0].length; run++) {
+				System.out.println("Round " + (run + 1) + "/" + results[0].length + " starts...");
+				for (int index = 0; index < serializationBenchmarkTestDrivers.length; index++) {
+					SerializationBenchmarkTestDriver driver = serializationBenchmarkTestDrivers[index];
+					
+					ByteArrayOutputStream bos;
+					long start, finish;
+
 					System.gc();
 					System.gc();
 					System.gc();
@@ -100,17 +115,21 @@ public class SerializationBenchmarkTest implements Serializable {
 					
 					System.gc();
 					
+					Object objArray[] = new Object[SERIALIZATION_COUNT];
+					for (int i = 0; i < SERIALIZATION_COUNT; i++) {
+						objArray[i] = driver.getObjectToSerialize();
+					}
+					
 					bos = new ByteArrayOutputStream();
 					start = System.nanoTime();
 					for (int i = 0; i < SERIALIZATION_COUNT; i++) {
-						driver.serialize(driver.getObjectToSerialize(), bos);
+						driver.serialize(objArray[i], bos);
 					}
 					driver.release(bos);
 					finish = System.nanoTime();
 					
 					byte[] output = bos.toByteArray();
 					long serializedDataSize = output.length;
-					
 					
 					System.out.println(driver.getName() + " executed " + SERIALIZATION_COUNT + 
 							           " times and serialized " + serializedDataSize + " bytes data in " + 
@@ -141,7 +160,7 @@ public class SerializationBenchmarkTest implements Serializable {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void runSerializationBenchmarkTestDriversAsSeperateProcesses() {
 		runSerializationBenchmarkTestDriversInSeperateProcess();
 	}	
@@ -448,6 +467,7 @@ public class SerializationBenchmarkTest implements Serializable {
 			try {
 				oos = new ObjectOutputStream(os);
 				oos.writeObject(o);
+				oos.flush();
 			} 
 			catch (IOException e) {
 				e.printStackTrace();
