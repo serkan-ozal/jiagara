@@ -20,11 +20,10 @@ import java.io.OutputStream;
 
 import tr.com.serkanozal.jiagara.exception.SerializationException;
 import tr.com.serkanozal.jiagara.serialize.AbstractSerializer;
-import tr.com.serkanozal.jiagara.serialize.field.FieldSerializer;
-import tr.com.serkanozal.jiagara.serialize.field.dma.DirectMemoryAccessBasedDefaultFieldSerializerFactory;
-import tr.com.serkanozal.jiagara.serialize.field.dma.DirectMemoryAccessBasedFieldSerializerFactory;
-import tr.com.serkanozal.jiagara.serialize.writer.dma.DirectMemoryAccessBasedOutputWriter;
-import tr.com.serkanozal.jiagara.serialize.writer.dma.DirectMemoryAccessBasedOutputWriterFactory;
+import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDataSerializerFactory;
+import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDefaultDataSerializerFactory;
+import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOutputWriter;
+import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOutputWriterFactory;
 
 /**
  * @author Serkan ÖZAL
@@ -32,11 +31,11 @@ import tr.com.serkanozal.jiagara.serialize.writer.dma.DirectMemoryAccessBasedOut
 public class DirectMemoryAccessBasedSerializer<T> extends AbstractSerializer<T, DirectMemoryAccessBasedOutputWriter> {
 
 	public DirectMemoryAccessBasedSerializer(Class<T> clazz) {
-		super(clazz, new DirectMemoryAccessBasedDefaultFieldSerializerFactory());
+		super(clazz, new DirectMemoryAccessBasedDefaultDataSerializerFactory());
 	}
 	
-	public DirectMemoryAccessBasedSerializer(Class<T> clazz, DirectMemoryAccessBasedFieldSerializerFactory fieldSerializerFactory) {
-		super(clazz, fieldSerializerFactory);
+	public DirectMemoryAccessBasedSerializer(Class<T> clazz, DirectMemoryAccessBasedDataSerializerFactory dataSerializerFactory) {
+		super(clazz, dataSerializerFactory);
 	}
 	
 	@Override
@@ -49,10 +48,25 @@ public class DirectMemoryAccessBasedSerializer<T> extends AbstractSerializer<T, 
 					DirectMemoryAccessBasedOutputWriterFactory.createDirectMemoryAccessBasedOutputWriter(os);
 				OUTPUT_WRITER_MAP.put(os, outputWriter);
 			}	
-			for (FieldSerializer<T, DirectMemoryAccessBasedOutputWriter> fieldSerializer : fieldSerializers) {
-				fieldSerializer.serializeField(obj, outputWriter);
-			}
+			serialize(obj, outputWriter);
+		}
+		catch (SerializationException e) {
+			throw e;
+		}
+		catch (Throwable t) {
+			logger.error("Error occured while serialization", t);
+			throw new SerializationException("Error occured while serialization", t);
+		}
+	}
+	
+	@Override
+	public void serialize(T obj, DirectMemoryAccessBasedOutputWriter ow) throws SerializationException {
+		try {
+			dataSerializer.serializeData(obj, ow);
 		} 
+		catch (SerializationException e) {
+			throw e;
+		}
 		catch (Throwable t) {
 			logger.error("Error occured while serialization", t);
 			throw new SerializationException("Error occured while serialization", t);

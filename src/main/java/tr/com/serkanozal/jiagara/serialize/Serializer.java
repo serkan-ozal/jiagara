@@ -26,11 +26,12 @@ import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
 /**
  * @author Serkan ÖZAL
  */
-public interface Serializer<T> {
+public interface Serializer<T, O extends OutputWriter> {
 
 	Map<OutputStream, OutputWriter> OUTPUT_WRITER_MAP = new HashMap<OutputStream, OutputWriter>();
 	
 	void serialize(T obj, OutputStream os) throws SerializationException;
+	void serialize(T obj, O ow) throws SerializationException;
 	void release(OutputStream os) throws SerializationException;
 	
 }

@@ -14,37 +14,16 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.serialize.writer;
+package tr.com.serkanozal.jiagara.serialize.dma.data;
+
+import tr.com.serkanozal.jiagara.serialize.data.DataSerializerFactory;
+import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOutputWriter;
 
 /**
  * @author Serkan ÖZAL
  */
-public interface OutputWriter {
+public interface DirectMemoryAccessBasedDataSerializerFactory extends DataSerializerFactory<DirectMemoryAccessBasedOutputWriter> {
 
-	void release();
-	
-	void writeNull();
-	
-	void write(byte value);
-	void write(boolean value);
-	void write(char value);
-	void write(short value);
-	void write(int value);
-	void write(float value);
-	void write(long value);
-	void write(double value);
-	void write(String value);
-	void write(Enum<?> value);
-	
-	void write(byte[] array);
-	void write(boolean[] array);
-	void write(char[] array);
-	void write(short[] array);
-	void write(int[] array);
-	void write(float[] array);
-	void write(long[] array);
-	void write(double[] array);
-	
-	void writeClassName(Class<?> clazz);
+	<T> DirectMemoryAccessBasedDataSerializer<T> createDataSerializer(Class<T> clazz);
 	
 }

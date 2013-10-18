@@ -17,41 +17,30 @@
 package tr.com.serkanozal.jiagara.serialize;
 
 import java.io.OutputStream;
-import java.lang.reflect.Field;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import tr.com.serkanozal.jiagara.exception.SerializationException;
-import tr.com.serkanozal.jiagara.serialize.field.FieldSerializer;
-import tr.com.serkanozal.jiagara.serialize.field.FieldSerializerFactory;
+import tr.com.serkanozal.jiagara.serialize.data.DataSerializer;
+import tr.com.serkanozal.jiagara.serialize.data.DataSerializerFactory;
 import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
 import tr.com.serkanozal.jiagara.util.LogUtil;
-import tr.com.serkanozal.jiagara.util.ReflectionUtil;
 
 /**
  * @author Serkan ÖZAL
  */
-public abstract class AbstractSerializer<T, O extends OutputWriter> implements Serializer<T> {
+public abstract class AbstractSerializer<T, O extends OutputWriter> implements Serializer<T, O> {
 
 	protected static final Logger logger = LogUtil.getLogger();
 
 	protected Class<T> clazz;
-	protected FieldSerializerFactory<O> fieldSerializerFactory;
-	protected FieldSerializer<T, O>[] fieldSerializers;
+	protected DataSerializerFactory<O> dataSerializerFactory;
+	protected DataSerializer<T, O> dataSerializer;
 	
-	@SuppressWarnings("unchecked")
-	public AbstractSerializer(Class<T> clazz, FieldSerializerFactory<O> fieldSerializerFactory) {
+	public AbstractSerializer(Class<T> clazz, DataSerializerFactory<O> dataSerializerFactory) {
 		this.clazz = clazz;
-		this.fieldSerializerFactory = fieldSerializerFactory;
-		List<Field> fieldsSortedByName = ReflectionUtil.getAllSerializableFieldsSortedByName(clazz);
-		if (fieldsSortedByName != null) {
-			fieldSerializers = new FieldSerializer[fieldsSortedByName.size()];
-			int i = 0;
-			for (Field field : fieldsSortedByName) {
-				fieldSerializers[i++] = fieldSerializerFactory.createFieldSerializer(field);
-			}
-		}
+		this.dataSerializerFactory = dataSerializerFactory;
+		this.dataSerializer = dataSerializerFactory.createDataSerializer(clazz);
 	}
 	
 	@SuppressWarnings("unchecked")

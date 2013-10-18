@@ -73,14 +73,6 @@ public class Buffer {
 		return length;
 	}
 	
-	public boolean isEmpty() {
-		return index == 0;
-	}
-	
-	public boolean isFull() {
-		return index == buffer.length;
-	}
-	
 	public void reset() {
 		index = 0;
 	}
@@ -96,17 +88,7 @@ public class Buffer {
 		AssertUtil.smaller(i, buffer.length, "Index must be smaller than $1 (length of buffer array): $0");
 		buffer[i] = value;
 	}
-	
-	public byte popByte() {
-		AssertUtil.isFalse(isEmpty(), "Buffer is empty");
-		return buffer[--index];
-	}
-	
-	public void pushByte(byte value) {
-		AssertUtil.isFalse(isFull(), "Buffer is full");
-		buffer[index++] = value;
-	}
-	
+
 	public void forward(int length) {
 		// TODO comment out for performance
 		//AssertUtil.smaller(index + length, buffer.length, "Index+length must be smaller than $1 (length of buffer array): $0");
@@ -136,7 +118,7 @@ public class Buffer {
 	public void checkCapacitiyAndHandle(int size) {
 		if (index + size >= length) {
 			if (bufferListener != null) {
-				bufferListener.doFlush();
+				bufferListener.onEndOfBuffer();
 			}
 			else {
 				// TODO Expand buffer
@@ -148,7 +130,7 @@ public class Buffer {
 	public void checkCapacitiyAndHandle(long size) {
 		if (index + size >= length) {
 			if (bufferListener != null) {
-				bufferListener.doFlush();
+				bufferListener.onEndOfBuffer();
 			}
 			else {
 				// TODO Expand buffer
@@ -159,7 +141,7 @@ public class Buffer {
 	
 	public interface BufferListener {
 		
-		void doFlush();
+		void onEndOfBuffer();
 		
 	}
 	

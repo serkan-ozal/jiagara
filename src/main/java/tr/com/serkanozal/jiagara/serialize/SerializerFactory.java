@@ -18,22 +18,24 @@ package tr.com.serkanozal.jiagara.serialize;
 
 import tr.com.serkanozal.jiagara.domain.model.serialize.SerializationType;
 import tr.com.serkanozal.jiagara.serialize.dma.DirectMemoryAccessBasedSerializer;
+import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
 
 /**
  * @author Serkan ÖZAL
  */
 public class SerializerFactory {
 
-	public static <T> Serializer<T> createSerializer(Class<T> clazz) {
+	public static <T, O extends OutputWriter> Serializer<T, O> createSerializer(Class<T> clazz) {
 		return createSerializer(clazz, SerializationType.getDefault());
 	}
 	
-	public static <T> Serializer<T> createSerializer(Class<T> clazz, SerializationType serializationType) {
+	@SuppressWarnings("unchecked")
+	public static <T, O extends OutputWriter> Serializer<T, O> createSerializer(Class<T> clazz, SerializationType serializationType) {
 		switch (serializationType) {
 			case DIRECT_MEMORY_ACCESS_BASED:
-				return new DirectMemoryAccessBasedSerializer<T>(clazz);
+				return (Serializer<T, O>) new DirectMemoryAccessBasedSerializer<T>(clazz);
 			default:	
-				return new DirectMemoryAccessBasedSerializer<T>(clazz);
+				return (Serializer<T, O>) new DirectMemoryAccessBasedSerializer<T>(clazz);
 		}
 	}
 	

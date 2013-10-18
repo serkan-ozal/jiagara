@@ -19,7 +19,7 @@ package tr.com.serkanozal.jiagara.serialize.writer;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import tr.com.serkanozal.jiagara.domain.model.buffer.Buffer;
+import tr.com.serkanozal.jiagara.domain.model.buffer.WritableBuffer;
 import tr.com.serkanozal.jiagara.exception.SerializationException;
 import tr.com.serkanozal.jiagara.util.JvmUtil;
 import tr.com.serkanozal.jiagara.util.SerDeConstants;
@@ -27,7 +27,7 @@ import tr.com.serkanozal.jiagara.util.SerDeConstants;
 /**
  * @author Serkan ÖZAL
  */
-public abstract class AbstractBufferedOutputWriter<B extends Buffer> implements BufferedOutputWriter<B> {
+public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> implements BufferedOutputWriter<B> {
 
 	protected OutputStream os;
 	protected B buffer;
@@ -46,12 +46,16 @@ public abstract class AbstractBufferedOutputWriter<B extends Buffer> implements 
 	
 	@Override
 	public void release() {
-		doFlush();
+		flush();
 		buffer.reset();
 	}
 	
 	@Override
-	public void doFlush() {
+	public void onEndOfBuffer() {
+		flush();
+	}
+	
+	protected void flush() {
 		try {
 			os.write(bufferArray, 0, buffer.getIndex());
 		} 
@@ -65,20 +69,20 @@ public abstract class AbstractBufferedOutputWriter<B extends Buffer> implements 
 		int referenceSize = JvmUtil.getReferenceSize();
 		buffer.checkCapacitiyAndHandle(referenceSize);
 		for (int i = 0; i < referenceSize; i++) {
-			buffer.pushByte((byte)0x00);
+			buffer.writeByte(SerDeConstants.OBJECT_NULL);
 		}	
 	}
 	
 	@Override
 	public void write(byte value) {
 		buffer.checkCapacitiyAndHandle(JvmUtil.BYTE_SIZE); 
-		buffer.pushByte(value);
+		buffer.writeByte(value);
 	}
 
 	@Override
 	public void write(boolean value) {
 		buffer.checkCapacitiyAndHandle(JvmUtil.BOOLEAN_SIZE);
-		buffer.pushByte(value ? (byte)0x01 : (byte)0x00);
+		buffer.writeByte(value ? (byte)0x01 : (byte)0x00);
 	}
 
 	@Override
@@ -179,16 +183,6 @@ public abstract class AbstractBufferedOutputWriter<B extends Buffer> implements 
 		}
 	}
 
-	@Override
-	public void write(Object value) {
-		// TODO Implement write object
-	}
-	
-	@Override
-	public void writeTyped(Object value) {
-		// TODO Implement write typed object
-	}
-	
 	@Override
 	public void write(byte[] array) {
 		if (array == null) { 
@@ -292,15 +286,10 @@ public abstract class AbstractBufferedOutputWriter<B extends Buffer> implements 
 			}
 		}	
 	}
-
-	@Override
-	public void write(Object[] array) {
-		if (array == null) { 
-			write(SerDeConstants.NULL_ARRAY_LENGTH);
-		}
-		else {
-			// TODO Implement write object array
-		}
-	}
 	
+	@Override
+	public void writeClassName(Class<?> clazz) {
+		write(clazz.getName());
+	}
+
 }

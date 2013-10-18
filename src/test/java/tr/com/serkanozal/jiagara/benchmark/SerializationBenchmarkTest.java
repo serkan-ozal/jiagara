@@ -33,8 +33,6 @@ import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.reflect.ReflectDatumWriter;
 import org.junit.Test;
 
-import tr.com.serkanozal.jiagara.serialize.Serializer;
-import tr.com.serkanozal.jiagara.serialize.SerializerFactory;
 import tr.com.serkanozal.jiagara.service.serialize.SerializerService;
 import tr.com.serkanozal.jiagara.service.serialize.SerializerServiceFactory;
 import tr.com.serkanozal.jiagara.util.JvmUtil;
@@ -70,6 +68,10 @@ public class SerializationBenchmarkTest implements Serializable {
 			if (WARM_UP) {
 				for (int index = 0; index < serializationBenchmarkTestDrivers.length; index++) {
 					SerializationBenchmarkTestDriver driver = serializationBenchmarkTestDrivers[index];
+					
+					if (driver == null) {
+						continue;
+					}
 
 					ByteArrayOutputStream bos;
 					long start, finish;
@@ -104,6 +106,10 @@ public class SerializationBenchmarkTest implements Serializable {
 				for (int index = 0; index < serializationBenchmarkTestDrivers.length; index++) {
 					SerializationBenchmarkTestDriver driver = serializationBenchmarkTestDrivers[index];
 					
+					if (driver == null) {
+						continue;
+					}
+					
 					ByteArrayOutputStream bos;
 					long start, finish;
 
@@ -122,9 +128,12 @@ public class SerializationBenchmarkTest implements Serializable {
 					
 					bos = new ByteArrayOutputStream();
 					start = System.nanoTime();
+					/*
 					for (int i = 0; i < SERIALIZATION_COUNT; i++) {
 						driver.serialize(objArray[i], bos);
 					}
+					*/
+					driver.serialize(objArray, bos);
 					driver.release(bos);
 					finish = System.nanoTime();
 					
@@ -145,6 +154,10 @@ public class SerializationBenchmarkTest implements Serializable {
 			
 			for (int index = 0; index < serializationBenchmarkTestDrivers.length; index++) {
 				SerializationBenchmarkTestDriver driver = serializationBenchmarkTestDrivers[index];
+				
+				if (driver == null) {
+					continue;
+				}
 				
 				long result = 0;
 				for (int run = 0; run < results[index].length; run++) {
@@ -199,7 +212,7 @@ public class SerializationBenchmarkTest implements Serializable {
 		try {
 			String processCmd = 
 					"java" + " -cp " + "\"" + System.getProperty("java.class.path") + "\"" + " " + 
-					"-XX:PermSize=512M -XX:MaxPermSize=1G -Xms1G -Xmx2G " + 
+					"-XX:PermSize=512M -XX:MaxPermSize=1G -Xms2G -Xmx4G " + 
 					SerializationBenchmarkTest.class.getName() + " " +  testDriverClass.getName();
 
 			Process proc = Runtime.getRuntime().exec(processCmd);
@@ -324,13 +337,10 @@ public class SerializationBenchmarkTest implements Serializable {
 
 	private static class JiagaraSerializationBenchmarkTestDriver implements SerializationBenchmarkTestDriver {
 		
-		@SuppressWarnings("unused")
 		private SerializerService serializerService;
-		private Serializer<ClassToSerialize> serializer;
 		
 		JiagaraSerializationBenchmarkTestDriver() {
 			serializerService = SerializerServiceFactory.getSerializerService();
-			serializer = SerializerFactory.createSerializer(ClassToSerialize.class);
 		}
 		
 		@Override
@@ -340,7 +350,7 @@ public class SerializationBenchmarkTest implements Serializable {
 		
 		@Override
 		public void serialize(Object o, OutputStream os) {
-			serializer.serialize((ClassToSerialize) o, os);
+			serializerService.serialize(o, os);
 		}
 		
 		@Override
@@ -350,7 +360,7 @@ public class SerializationBenchmarkTest implements Serializable {
 		
 		@Override
 		public void release(OutputStream os) {
-			serializer.release(os);
+			serializerService.release(os);
 		}
 		
 	}
@@ -401,11 +411,11 @@ public class SerializationBenchmarkTest implements Serializable {
 	
 	private static class AvroSerializationBenchmarkTestDriver implements SerializationBenchmarkTestDriver {
 		
-		private DatumWriter<ClassToSerialize> avroWriter;
+		private Map<Class<?>, DatumWriter<?>> avroWriterMap = new HashMap<Class<?>, DatumWriter<?>>();
 		private Map<OutputStream, Encoder> encoderMap = new HashMap<OutputStream, Encoder>();
 		
 		AvroSerializationBenchmarkTestDriver() {
-			avroWriter = new ReflectDatumWriter<ClassToSerialize>(ClassToSerialize.class);
+
 		}
 		
 		@Override
@@ -421,11 +431,30 @@ public class SerializationBenchmarkTest implements Serializable {
 					encoder = EncoderFactory.get().binaryEncoder(os, null);
 					encoderMap.put(os, encoder);
 				}
-				avroWriter.write((ClassToSerialize)o, encoder);
+				if (o.getClass().isArray()) {
+					Object[] array = (Object[])o;
+					for (Object obj : array) {
+						writeObject(obj, encoder);
+					}
+				}
+				else {
+					writeObject(o, encoder);
+				}	
 			} 
 			catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+		
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		private void writeObject(Object o, Encoder encoder) throws IOException {
+			DatumWriter avroWriter = avroWriterMap.get(o.getClass());
+			if (avroWriter == null) {
+				Class<?> clazz = o.getClass();
+				avroWriter = new ReflectDatumWriter(clazz);
+				avroWriterMap.put(clazz, avroWriter);
+			}
+			avroWriter.write(o, encoder);
 		}
 		
 		@Override

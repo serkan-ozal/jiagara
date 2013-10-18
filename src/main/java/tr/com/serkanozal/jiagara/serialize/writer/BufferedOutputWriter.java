@@ -16,13 +16,13 @@
 
 package tr.com.serkanozal.jiagara.serialize.writer;
 
-import tr.com.serkanozal.jiagara.domain.model.buffer.Buffer;
 import tr.com.serkanozal.jiagara.domain.model.buffer.Buffer.BufferListener;
+import tr.com.serkanozal.jiagara.domain.model.buffer.WritableBuffer;
 
 /**
  * @author Serkan ÖZAL
  */
-public interface BufferedOutputWriter<B extends Buffer> extends OutputWriter, BufferListener {
+public interface BufferedOutputWriter<B extends WritableBuffer> extends OutputWriter, BufferListener {
 
 	B getBuffer();
 
