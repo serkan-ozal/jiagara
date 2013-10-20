@@ -55,9 +55,9 @@ public interface SerDeConstants {
 	byte STRING_DATA_WITHOUT_OPTIMIZATION = 0x01;
 	byte STRING_DATA_WITH_OPTIMIZATION = 0x02;
 	
-	byte SIZE_4_BYTE = 0x00;
-	byte SIZE_3_BYTE = 0x10;
-	byte SIZE_2_BYTE = 0x20;
-	byte SIZE_1_BYTE = 0x40;
+	byte SIZE_1_BYTE = 0x00;
+	byte SIZE_2_BYTE = 0x10;
+	byte SIZE_4_BYTE = 0x20;
+	byte SIZE_8_BYTE = 0x40;
 	
 }
