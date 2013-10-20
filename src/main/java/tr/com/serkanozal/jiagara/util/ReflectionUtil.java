@@ -70,7 +70,7 @@ public class ReflectionUtil {
 	
 	public static List<Field> getAllSerializableFields(Class<?> cls) {
 		List<Field> fields = new ArrayList<Field>();
-		createFields(cls, fields, false, false, false, null);
+		createFields(cls, fields, true, false, false, null);
 		return fields;
 	}
 

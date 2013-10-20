@@ -55,6 +55,7 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	private static int objectArrayScale;
 	private static long countOffsetInString;
 	private static long valueArrayOffsetInString;
+	@SuppressWarnings("unused")
 	private static long ordinalOffsetInEnum;
 	private static int arrayLengthSize;
 	private static long byteArrayCopyStartOffset;
@@ -131,7 +132,6 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	
 	public DirectMemoryAccessBasedOutputWriterImpl(OutputStream os, DirectMemoryAccessBasedWritableBuffer buffer) {
 		super(os, buffer);
-		buffer.setBufferListener(this);
 		startAddress = JvmUtil.getArrayBaseAddress(bufferArray, byte.class);
 	}
 	
@@ -202,6 +202,11 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	}
 	
 	@Override
+	public void writeAsciiString(Object obj, long offset) {
+		writeAscii((String)unsafe.getObject(obj, offset));
+	}
+	
+	@Override
 	public void write(String value) {
 		if (value == null) {
 			buffer.checkCapacitiyAndHandle(JvmUtil.INT_SIZE);
@@ -209,19 +214,47 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 			buffer.forward(JvmUtil.INT_SIZE);
 		}
 		else {
-			long size = (value.length() * JvmUtil.CHAR_SIZE);
-			long totalSize = size +  JvmUtil.INT_SIZE;
+			int length = value.length();
+			int size = (length * JvmUtil.CHAR_SIZE);
+			int totalSize = size +  JvmUtil.INT_SIZE;
 			buffer.checkCapacitiyAndHandle(totalSize);
-			unsafe.copyMemory(value, countOffsetInString, bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), JvmUtil.INT_SIZE);
-			buffer.forward(JvmUtil.INT_SIZE);
-			unsafe.copyMemory(value, valueArrayOffsetInString, bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), size);
+			totalSize = size + writeVarInteger(SerDeConstants.STRING_DATA_WITHOUT_OPTIMIZATION, size);
+			char[] valueArray = (char[])unsafe.getObject(value, valueArrayOffsetInString);
+			unsafe.copyMemory(	valueArray, charArrayBase, 
+								bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), size);
 			buffer.forward(size);
 		}	
 	}
 	
 	@Override
+	public void writeAscii(String value) {
+		if (value == null) {
+			write(SerDeConstants.NULL_STRING_LENGTH);
+		}
+		else {
+			write(SerDeConstants.STRING_DATA_WITH_OPTIMIZATION);
+			int length = value.length();
+			int size = (length * JvmUtil.BYTE_SIZE);
+			long totalSize = size +  JvmUtil.INT_SIZE;
+			buffer.checkCapacitiyAndHandle(totalSize);
+			totalSize = size + writeVarInteger(SerDeConstants.STRING_DATA_WITH_OPTIMIZATION, size);
+			char[] valueArray = (char[])unsafe.getObject(value, valueArrayOffsetInString);
+			for (int i = 0; i < length; i++) {
+				unsafe.putByte( bufferArray, (long)(byteArrayBase + (i * byteArrayScale)),
+								unsafe.getByte(valueArray, (long)(charArrayBase + (i << 1))));
+			}
+			buffer.forward(size);
+		}	
+	}
+
+	@Override
 	public void writeEnum(Object obj, long offset) {
 		write((Enum<?>)unsafe.getObject(obj, offset));
+		/*
+		buffer.checkCapacitiyAndHandle(JvmUtil.INT_SIZE);
+		unsafe.copyMemory(e, ordinalOffsetInEnum, bufferArray, byteArrayBase + (buffer.getIndex() * byteArrayScale), JvmUtil.INT_SIZE);
+		buffer.forward(JvmUtil.INT_SIZE);
+		*/
 	}
 	
 	@Override
@@ -230,7 +263,7 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 			write(SerDeConstants.NULL_ENUM_ORDINAL);
 		}
 		else {
-			write(value.ordinal());
+			writeVarInt(value.ordinal());
 		}
 	}
 
@@ -426,26 +459,30 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 			buffer.forward(JvmUtil.INT_SIZE);
 		}
 		else {
+			write(SerDeConstants.STRING_DATA_WITHOUT_OPTIMIZATION);
 			int length = unsafe.getInt(address + countOffsetInString); 
-			long size = (length * JvmUtil.CHAR_SIZE);
-			long totalSize = size +  JvmUtil.INT_SIZE;
+			int size = (length * JvmUtil.CHAR_SIZE);
+			int totalSize = size +  JvmUtil.INT_SIZE;
 			buffer.checkCapacitiyAndHandle(totalSize);
-			unsafe.copyMemory(address + countOffsetInString, startAddress + buffer.getIndex(), JvmUtil.INT_SIZE);
-			buffer.forward(JvmUtil.INT_SIZE);
-			unsafe.copyMemory(address + countOffsetInString, startAddress + buffer.getIndex(), size);
+			totalSize = size + writeVarInteger(SerDeConstants.STRING_DATA_WITHOUT_OPTIMIZATION, size);
+			long valueArrayAddress = unsafe.getAddress(address + valueArrayOffsetInString);
+			unsafe.copyMemory(valueArrayAddress + charArrayBase, startAddress + buffer.getIndex(), size);
 			buffer.forward(size);
 		}	
 	}
-	
+
 	@Override
 	public void writeEnum(long address) {
 		if (address == 0) { // Null enum
 			write(SerDeConstants.NULL_ENUM_ORDINAL);
 		}
 		else {
+			write((Enum<?>)JvmUtil.getObject(address));
+			/*
 			buffer.checkCapacitiyAndHandle(JvmUtil.INT_SIZE);
 			unsafe.copyMemory(address + ordinalOffsetInEnum, startAddress + buffer.getIndex(), JvmUtil.INT_SIZE);
 			buffer.forward(JvmUtil.INT_SIZE);
+			*/
 		}
 	}
 

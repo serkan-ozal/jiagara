@@ -20,8 +20,8 @@ import java.lang.reflect.Field;
 
 import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDataSerializerFactory;
-import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDefaultDataSerializerFactory;
-import tr.com.serkanozal.jiagara.serialize.dma.field.DirectMemoryAccessBasedDefaultFieldSerializerFactory;
+import tr.com.serkanozal.jiagara.serialize.dma.data.DefaultDirectMemoryAccessBasedDataSerializerFactory;
+import tr.com.serkanozal.jiagara.serialize.dma.field.DefaultDirectMemoryAccessBasedFieldSerializerFactory;
 import tr.com.serkanozal.jiagara.serialize.dma.field.DirectMemoryAccessBasedFieldSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.field.DirectMemoryAccessBasedFieldSerializerFactory;
 
@@ -32,9 +32,9 @@ public class DirectMemoryAccessBasedSerializerFactory
 	implements DirectMemoryAccessBasedFieldSerializerFactory, DirectMemoryAccessBasedDataSerializerFactory {
 
 	private DirectMemoryAccessBasedFieldSerializerFactory directMemoryAccessBasedFieldSerializerFactory = 
-				new DirectMemoryAccessBasedDefaultFieldSerializerFactory(); 
+				new DefaultDirectMemoryAccessBasedFieldSerializerFactory(); 
 	private DirectMemoryAccessBasedDataSerializerFactory directMemoryAccessBasedDataSerializerFactory = 
-				new DirectMemoryAccessBasedDefaultDataSerializerFactory();
+				new DefaultDirectMemoryAccessBasedDataSerializerFactory();
 	
 	@Override
 	public <T> DirectMemoryAccessBasedFieldSerializer<T> createFieldSerializer(

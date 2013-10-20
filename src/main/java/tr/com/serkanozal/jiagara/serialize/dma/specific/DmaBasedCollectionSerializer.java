@@ -23,7 +23,7 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 
 import tr.com.serkanozal.jiagara.serialize.Serializer;
-import tr.com.serkanozal.jiagara.serialize.dma.AbstractDirectMemoryAccessBasedSerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.AbstractDirectMemoryAccessBasedFieldAndDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.field.DirectMemoryAccessBasedFieldSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOutputWriter;
@@ -34,12 +34,12 @@ import tr.com.serkanozal.jiagara.util.SerDeConstants;
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedCollectionSerializer<T> extends AbstractDirectMemoryAccessBasedSerializer<T, DirectMemoryAccessBasedOutputWriter> 
+public class DmaBasedCollectionSerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 		
 	private SerializerService serializerService = SerializerServiceFactory.getSerializerService();
 	private CollectionElementSerializer collectionElementSerializer;
-	private Class<?> collectionTypeClass;
+	private Class<?> collectionTypeClass = Object.class;
 	@SuppressWarnings("rawtypes")
 	private Serializer serializer;
 	
@@ -51,8 +51,8 @@ public class DmaBasedCollectionSerializer<T> extends AbstractDirectMemoryAccessB
 			collectionTypeClass = (Class<?>)collectionType.getActualTypeArguments()[0];
 			if (Modifier.isFinal(collectionTypeClass.getModifiers())) {
 				collectionElementSerializer = new KnownAndFinalTypedCollectionElementSerializer();
-				serializer = serializerService.getSerializer(collectionTypeClass);
 			}
+			serializer = serializerService.getSerializer(collectionTypeClass);
 		}	
 		if (collectionElementSerializer == null) {
 			collectionElementSerializer = new UnknownOrNonFinalTypedCollectionElementSerializer();
@@ -74,12 +74,13 @@ public class DmaBasedCollectionSerializer<T> extends AbstractDirectMemoryAccessB
 			outputWriter.writeNull();
 		}
 		else {
+			writeClass(collectionField.getClass(), outputWriter); 
 			collectionElementSerializer.serialize(collectionField, outputWriter);
 		}
 	}
 
 	@Override
-	public void serializeData(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
+	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		Collection<?> o = (Collection<?>)obj;
 		if (o == null) {
 			outputWriter.writeNull();
@@ -100,12 +101,9 @@ public class DmaBasedCollectionSerializer<T> extends AbstractDirectMemoryAccessB
 		@SuppressWarnings("unchecked")
 		@Override
 		public void serialize(Collection<?> collection, DirectMemoryAccessBasedOutputWriter outputWriter) {
-			outputWriter.write(SerDeConstants.COLLECTION_WITH_TYPE);
-			writeClass(collection.getClass(), outputWriter); 
-			outputWriter.write(collection.size()); 
-			writeClass(collectionTypeClass, outputWriter);
+			outputWriter.writeVarInteger(SerDeConstants.COLLECTION_WITH_TYPE, collection.size()); 
 			for (Object collectionObj : collection) {
-				serializer.serialize(collectionObj, outputWriter);
+				serializer.serializeContent(collectionObj, outputWriter);
 			}	
 		}
 		
@@ -113,14 +111,33 @@ public class DmaBasedCollectionSerializer<T> extends AbstractDirectMemoryAccessB
 	
 	private class UnknownOrNonFinalTypedCollectionElementSerializer implements CollectionElementSerializer {
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public void serialize(Collection<?> collection, DirectMemoryAccessBasedOutputWriter outputWriter) {
-			outputWriter.write(SerDeConstants.COLLECTION_WITHOUT_TYPE);
-			writeClass(collection.getClass(), outputWriter); 
-			outputWriter.write(collection.size()); 
+			boolean allElementsAreSameTypeWithCollection = true;
 			for (Object collectionObj : collection) {
-				writeClass(collectionObj.getClass(), outputWriter);
-				serializerService.serialize(collectionObj, outputWriter);
+				if (collectionObj != null && collectionObj.getClass().equals(collectionTypeClass) == false) {
+					allElementsAreSameTypeWithCollection = false;
+				}
+			}
+			if (allElementsAreSameTypeWithCollection) {
+				outputWriter.writeVarInteger(SerDeConstants.COLLECTION_WITH_TYPE, collection.size()); 
+				for (Object collectionObj : collection) {
+					serializer.serializeContent(collectionObj, outputWriter);
+				}	
+			}
+			else {
+				outputWriter.writeVarInteger(SerDeConstants.COLLECTION_WITHOUT_TYPE, collection.size()); 
+				for (Object collectionObj : collection) {
+					if (collectionObj.getClass().equals(collectionTypeClass)) {
+						outputWriter.write(SerDeConstants.OBJECT_DATA_WITHOUT_TYPE);
+						serializer.serializeContent(collectionObj, outputWriter);
+					}
+					else {
+						outputWriter.write(SerDeConstants.OBJECT_DATA);
+						serializerService.serialize(collectionObj, outputWriter);
+					}	
+				}	
 			}	
 		}
 		

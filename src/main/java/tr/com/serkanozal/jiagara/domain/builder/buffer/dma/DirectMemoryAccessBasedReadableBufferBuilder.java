@@ -19,42 +19,42 @@ package tr.com.serkanozal.jiagara.domain.builder.buffer.dma;
 import tr.com.serkanozal.jiagara.domain.builder.Builder;
 import tr.com.serkanozal.jiagara.domain.model.buffer.Buffer;
 import tr.com.serkanozal.jiagara.domain.model.buffer.Buffer.BufferListener;
-import tr.com.serkanozal.jiagara.domain.model.buffer.dma.DirectMemoryAccessBasedBuffer;
+import tr.com.serkanozal.jiagara.domain.model.buffer.dma.DirectMemoryAccessBasedReadableBuffer;
 
 /**
  * @author Serkan ÖZAL
  */
-public class DirectMemoryAccessBasedBufferBuilder implements Builder<DirectMemoryAccessBasedBuffer> {
+public class DirectMemoryAccessBasedReadableBufferBuilder implements Builder<DirectMemoryAccessBasedReadableBuffer> {
 
 	private byte[] buffer;
 	private int size;
 	private BufferListener bufferListener;
 
-	public DirectMemoryAccessBasedBufferBuilder buffer(byte[] buffer) {
+	public DirectMemoryAccessBasedReadableBufferBuilder buffer(byte[] buffer) {
 		this.buffer = buffer;
 		return this;
 	}
 
-	public DirectMemoryAccessBasedBufferBuilder size(int size) {
+	public DirectMemoryAccessBasedReadableBufferBuilder size(int size) {
 		this.size = size;
 		return this;
 	}
 	
-	public DirectMemoryAccessBasedBufferBuilder bufferListener(Buffer.BufferListener bufferListener) {
+	public DirectMemoryAccessBasedReadableBufferBuilder bufferListener(Buffer.BufferListener bufferListener) {
 		this.bufferListener = bufferListener;
 		return this;
 	}
 	
 	@Override
-	public DirectMemoryAccessBasedBuffer build() {
+	public DirectMemoryAccessBasedReadableBuffer build() {
 		if (buffer != null) {
-			return new DirectMemoryAccessBasedBuffer(buffer, bufferListener);
+			return new DirectMemoryAccessBasedReadableBuffer(buffer, bufferListener);
 		}
 		else if (size != 0) {
-			return new DirectMemoryAccessBasedBuffer(size, bufferListener);
+			return new DirectMemoryAccessBasedReadableBuffer(size, bufferListener);
 		}
 		else {
-			return new DirectMemoryAccessBasedBuffer(bufferListener);
+			return new DirectMemoryAccessBasedReadableBuffer(bufferListener);
 		}
 	}
 	

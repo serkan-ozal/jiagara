@@ -16,27 +16,27 @@
 
 package tr.com.serkanozal.jiagara.domain.model.buffer.dma;
 
-import tr.com.serkanozal.jiagara.domain.model.buffer.Buffer;
+import tr.com.serkanozal.jiagara.domain.model.buffer.WritableBuffer;
 import tr.com.serkanozal.jiagara.util.JvmUtil;
 
 /**
  * @author Serkan ÖZAL
  */
-public class DirectMemoryAccessBasedBuffer extends Buffer {
+public class DirectMemoryAccessBasedWritableBuffer extends WritableBuffer {
 
 	private long startAddress;
 	
-	public DirectMemoryAccessBasedBuffer(BufferListener bufferListener) {
+	public DirectMemoryAccessBasedWritableBuffer(BufferListener bufferListener) {
 		super(bufferListener);
 		this.startAddress = JvmUtil.getArrayBaseAddress(buffer, byte.class);
 	}
 	
-	public DirectMemoryAccessBasedBuffer(int size, BufferListener bufferListener) {
+	public DirectMemoryAccessBasedWritableBuffer(int size, BufferListener bufferListener) {
 		super(size, bufferListener);
 		this.startAddress = JvmUtil.getArrayBaseAddress(buffer, byte.class);
 	}
 	
-	public DirectMemoryAccessBasedBuffer(byte[] buffer, BufferListener bufferListener) {
+	public DirectMemoryAccessBasedWritableBuffer(byte[] buffer, BufferListener bufferListener) {
 		super(buffer, bufferListener);
 		this.startAddress = JvmUtil.getArrayBaseAddress(buffer, byte.class);
 	}

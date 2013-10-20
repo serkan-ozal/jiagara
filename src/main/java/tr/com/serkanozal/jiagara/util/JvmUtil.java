@@ -169,7 +169,7 @@ public class JvmUtil {
         	throw new RuntimeException("Unable to get unsafe", e);
         }
 
-        objArray = new Object[1];
+        objArray = new Object[2];
         
         int headerSize;
         try {
@@ -1706,6 +1706,148 @@ public class JvmUtil {
 			return name;
 		}
 		
+	}
+	
+    @SuppressWarnings("unchecked")
+	public static synchronized <T> T getObject(long address) {
+    	address = toJvmAddress(address);
+    	
+    	switch (addressSize) {
+            case SIZE_32_BIT:
+                putAsIntAddress(objArray, baseOffset, address);
+                break;
+            case SIZE_64_BIT:
+            	int referenceSize = getReferenceSize();
+            	switch (referenceSize) {
+                 	case ADDRESSING_4_BYTE:
+                 		putAsIntAddress(objArray, baseOffset, address);
+                 		break;
+                 	case ADDRESSING_8_BYTE:
+                 		unsafe.putLong(objArray, baseOffset, address);
+                 		break;
+                 	default:    
+                        throw new AssertionError("Unsupported reference size: " + referenceSize);
+            	}
+            	break;    
+            default:
+                throw new AssertionError("Unsupported address size: " + JvmUtil.getAddressSize());
+        }       
+
+        return (T) objArray[0];
+    }
+    
+    public static synchronized <T> void setObject(long address, T obj) {
+        if (obj == null) {
+            switch (addressSize) {
+                case SIZE_32_BIT:
+                    unsafe.putInt(address, 0);
+                    break;
+                case SIZE_64_BIT:
+                	int referenceSize = getReferenceSize();
+                	switch (referenceSize) {
+                     	case ADDRESSING_4_BYTE:
+                     		unsafe.putInt(address, 0);
+                     		break;
+                     	case ADDRESSING_8_BYTE:
+                     		unsafe.putLong(address, 0L);
+                     		break;
+                     	default:    
+                            throw new AssertionError("Unsupported reference size: " + referenceSize);
+                	}
+                    break;    
+                default:
+                    throw new AssertionError("Unsupported address size: " + addressSize);
+            }
+        }
+        else {
+            long objSize = sizeOf(obj.getClass());
+            long objAddress = addressOf(obj);
+            unsafe.copyMemory(objAddress, address, headerSize + objSize);   
+        }    
+    }
+    
+    public static synchronized <T> T changeObject(T source, T target) {
+        if (source == null) {
+            throw new IllegalArgumentException("Source object is null !");
+        }
+        long targetAddress = addressOf(target);
+        setObject(targetAddress, source);
+        
+        return target;
+    }
+    
+    @SuppressWarnings("unchecked")
+	public static synchronized <T> T copyObject(T original) {
+    	if (original == null) {
+            throw new IllegalArgumentException("Original object is null !");
+        }
+        long originalAddress = addressOf(original);
+        Object[] array = new Object[] {null};
+        
+        switch (addressSize) {
+	        case SIZE_32_BIT:
+	        	putAsIntAddress(array, baseOffset, originalAddress);
+	            break;
+	        case SIZE_64_BIT:
+	        	int referenceSize = getReferenceSize();
+            	switch (referenceSize) {
+                 	case ADDRESSING_4_BYTE:
+                 		putAsIntAddress(array, baseOffset, originalAddress);
+                 		break;
+                 	case ADDRESSING_8_BYTE:
+                 		unsafe.putLong(array, baseOffset, originalAddress);
+                 		break;
+                 	default:    
+                        throw new AssertionError("Unsupported reference size: " + referenceSize);
+            	}
+	            break;    
+	        default:
+	            throw new AssertionError("Unsupported address size: " + addressSize);
+        }
+
+        return (T) array[0];
+    }
+    
+    public static long getAsIntAddress(long address) {
+    	return normalize(unsafe.getInt(address));
+    }
+    
+    public static long getAsIntAddress(Object obj, long offset) {
+    	return normalize(unsafe.getInt(obj, offset));
+    }
+    
+    public static void putAsIntAddress(long address, long intAddress) {
+    	long l = unsafe.getLong(address + INT_SIZE);
+ 		unsafe.putLong(address, intAddress);
+ 		unsafe.putLong(address + INT_SIZE, l);
+    }
+    
+    public static void putAsIntAddress(Object obj, long offset, long intAddress) {
+    	long l = unsafe.getLong(obj, offset + INT_SIZE);
+ 		unsafe.putLong(obj, offset, intAddress);
+ 		unsafe.putLong(obj, offset + INT_SIZE, l);
+    }
+    
+    @SuppressWarnings({ "deprecation" })
+	public static byte[] createOffHeapBuffer(int length) {
+		Unsafe unsafe = JvmUtil.getUnsafe();
+		int elementSize = JvmUtil.sizeOfType(byte.class);
+		long arraySize = JvmUtil.sizeOfArray(byte.class, length);
+		long allocatedAddress = 
+				unsafe.allocateMemory(arraySize + (length * elementSize) + 
+									  JvmUtil.getAddressSize()); // Extra memory for possible aligning
+		byte[] sampleArray = (byte[]) Array.newInstance(byte.class, 0);
+		int arrayHeaderSize = JvmUtil.getArrayHeaderSize();
+
+		// Copy sample array header to object pool array header
+		for (int i = 0; i < arrayHeaderSize; i++) {
+			unsafe.putByte(allocatedAddress + i, unsafe.getByte(sampleArray, i));
+		}
+		
+		// Set length of array object pool array
+		JvmUtil.setArrayLength(allocatedAddress, byte.class, length);
+
+		return (byte[])JvmUtil.getObject(allocatedAddress);
 	}
 	 
 }

@@ -14,16 +14,45 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.serialize.data;
-
-import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
+package tr.com.serkanozal.jiagara.domain.model.context;
 
 /**
  * @author Serkan ÖZAL
  */
-public interface DataSerializer<T, O extends OutputWriter> {
+public class ClassRegistry {
 
-	void serializeData(T obj, O outputWriter);
-	void serializeDataContent(T obj, O outputWriter);
+	private int code;
+	private Class<?> clazz;
+	
+	public ClassRegistry(Class<?> clazz) {
+		this.code = clazz.hashCode();
+		this.clazz = clazz;
+	}
+	
+	public ClassRegistry(int code, Class<?> clazz) {
+		this.code = code;
+		this.clazz = clazz;
+	}
+
+	public int getCode() {
+		return code;
+	}
+
+	public void setCode(int code) {
+		this.code = code;
+	}
+
+	public Class<?> getClazz() {
+		return clazz;
+	}
+
+	public void setClazz(Class<?> clazz) {
+		this.clazz = clazz;
+	}
+	
+	@Override
+	public int hashCode() {
+		return code;
+	}
 	
 }

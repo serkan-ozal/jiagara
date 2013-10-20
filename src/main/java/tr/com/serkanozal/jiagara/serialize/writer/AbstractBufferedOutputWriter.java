@@ -37,6 +37,7 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 		this.os = os;
 		this.buffer = buffer;
 		this.bufferArray = buffer.getBufferArray();
+		buffer.setBufferListener(this);
 	}
 	
 	@Override
@@ -69,7 +70,7 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 		int referenceSize = JvmUtil.getReferenceSize();
 		buffer.checkCapacitiyAndHandle(referenceSize);
 		for (int i = 0; i < referenceSize; i++) {
-			buffer.writeByte(SerDeConstants.OBJECT_NULL);
+			buffer.writeByte(SerDeConstants.NULL);
 		}	
 	}
 	
@@ -163,14 +164,74 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 			write(SerDeConstants.NULL_STRING_LENGTH);
 		}
 		else {
+			write(SerDeConstants.STRING_DATA_WITHOUT_OPTIMIZATION);
 			int length = value.length();
-			int size = (length * JvmUtil.CHAR_SIZE + JvmUtil.INT_SIZE);
-			buffer.checkCapacitiyAndHandle(size);
-			write(length);
+			int size = length * JvmUtil.CHAR_SIZE;
+			int totalSize = size + JvmUtil.INT_SIZE;
+			buffer.checkCapacitiyAndHandle(totalSize);
+			writeVarInteger(SerDeConstants.STRING_DATA_WITHOUT_OPTIMIZATION, size);
 			for (int i = 0; i < length; i++) {
 				write(value.charAt(i));
 			}
 		}	
+	}
+	
+	@Override
+	public void writeAscii(String value) {
+		if (value == null) {
+			write(SerDeConstants.NULL_STRING_LENGTH);
+		}
+		else {
+			write(SerDeConstants.STRING_DATA_WITH_OPTIMIZATION);
+			int length = value.length();
+			int size = length * JvmUtil.BYTE_SIZE;
+			int totalSize = size + JvmUtil.INT_SIZE;
+			buffer.checkCapacitiyAndHandle(totalSize);
+			writeVarInteger(SerDeConstants.STRING_DATA_WITH_OPTIMIZATION, size);
+			for (int i = 0; i < length; i++) {
+				write((byte)value.charAt(i));
+			}
+		}	
+	}
+	
+	@Override
+	public byte writeVarInteger(byte additionalCode, int size) {
+		if ((size & 0xFFF7FF00) == 0) {
+			write((byte)(additionalCode | SerDeConstants.SIZE_1_BYTE));
+			write((byte)size);
+			return JvmUtil.BYTE_SIZE;
+			
+		}
+		else if ((size & 0xFF7F0000) == 0) {
+			write((byte)(additionalCode | SerDeConstants.SIZE_2_BYTE));
+			write((short)size);
+			return JvmUtil.SHORT_SIZE;
+		}
+		else {
+			write((byte)(additionalCode | SerDeConstants.SIZE_4_BYTE));
+			write(size);
+			return JvmUtil.INT_SIZE;
+		}
+	}
+	
+	@Override
+	public byte writeVarInt(int size) {
+		if ((size & 0xFFF7FF00) == 0) {
+			write((byte)(SerDeConstants.SIZE_1_BYTE));
+			write((byte)size);
+			return JvmUtil.BYTE_SIZE;
+			
+		}
+		else if ((size & 0xFF7F0000) == 0) {
+			write((byte)(SerDeConstants.SIZE_2_BYTE));
+			write((short)size);
+			return JvmUtil.SHORT_SIZE;
+		}
+		else {
+			write((byte)(SerDeConstants.SIZE_4_BYTE));
+			write(size);
+			return JvmUtil.INT_SIZE;
+		}
 	}
 	
 	@Override
@@ -179,7 +240,7 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 			write(SerDeConstants.NULL_ENUM_ORDINAL);
 		}
 		else {
-			write(value.ordinal());
+			writeVarInt(value.ordinal());
 		}
 	}
 

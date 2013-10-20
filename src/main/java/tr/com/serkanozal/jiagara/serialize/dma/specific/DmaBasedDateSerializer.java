@@ -14,49 +14,64 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.serialize.dma.object;
+package tr.com.serkanozal.jiagara.serialize.dma.specific;
 
 import java.lang.reflect.Field;
+import java.util.Date;
 
 import tr.com.serkanozal.jiagara.serialize.dma.AbstractDirectMemoryAccessBasedFieldAndDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.field.DirectMemoryAccessBasedFieldSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOutputWriter;
 import tr.com.serkanozal.jiagara.util.ReflectionUtil;
+import tr.com.serkanozal.jiagara.util.SerDeConstants;
 
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedObjectCharacterSerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
+public class DmaBasedDateSerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
-	
+		
 	private long valueFieldOffset;
 	
 	@SuppressWarnings("restriction")
-	public DmaBasedObjectCharacterSerializer(Field field) {
+	public DmaBasedDateSerializer(Field field) {
 		super(field);
-		valueFieldOffset = unsafe.objectFieldOffset(ReflectionUtil.getField(Character.class, "value"));
+		valueFieldOffset = unsafe.objectFieldOffset(ReflectionUtil.getField(Date.class, "fastTime"));
 	}
 	
-	public DmaBasedObjectCharacterSerializer(Class<T> clazz) {
+	public DmaBasedDateSerializer(Class<T> clazz) {
 		super(clazz);
 	}
-
+	
 	@SuppressWarnings("restriction")
 	@Override
 	public void serializeField(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		Character charField = unsafe.getChar(obj, fieldOffset);
-		if (charField == null) {
+		Date dateField = (Date)unsafe.getObject(obj, fieldOffset);
+		if (dateField == null) {
 			outputWriter.writeNull();
 		}
 		else {
-			outputWriter.writeCharacter(charField, valueFieldOffset);
+			if (dateField.getClass().equals(fieldType)) {
+				outputWriter.write(SerDeConstants.OBJECT_DATA_WITHOUT_TYPE);
+			}	
+			else {
+				outputWriter.write(SerDeConstants.OBJECT_DATA);
+				writeClass(dateField.getClass(), outputWriter);
+			}
+			outputWriter.writeLong(dateField, valueFieldOffset);
 		}	
 	}
 
 	@Override
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		outputWriter.writeCharacter((Character)obj, valueFieldOffset);
+		Date o = (Date)obj;
+		if (o == null) {
+			outputWriter.writeNull();
+		}
+		else {
+			outputWriter.writeLong(o, valueFieldOffset);
+		}
 	}
 
 }

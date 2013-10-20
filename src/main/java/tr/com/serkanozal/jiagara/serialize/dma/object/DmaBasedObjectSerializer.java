@@ -22,9 +22,9 @@ import java.util.List;
 
 import tr.com.serkanozal.jiagara.exception.SerializationException;
 import tr.com.serkanozal.jiagara.serialize.Serializer;
-import tr.com.serkanozal.jiagara.serialize.dma.AbstractDirectMemoryAccessBasedSerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.AbstractDirectMemoryAccessBasedFieldAndDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDataSerializer;
-import tr.com.serkanozal.jiagara.serialize.dma.field.DirectMemoryAccessBasedDefaultFieldSerializerFactory;
+import tr.com.serkanozal.jiagara.serialize.dma.field.DefaultDirectMemoryAccessBasedFieldSerializerFactory;
 import tr.com.serkanozal.jiagara.serialize.dma.field.DirectMemoryAccessBasedFieldSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.field.DirectMemoryAccessBasedFieldSerializerFactory;
 
@@ -38,7 +38,7 @@ import tr.com.serkanozal.jiagara.util.SerDeConstants;
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedObjectSerializer<T> extends AbstractDirectMemoryAccessBasedSerializer<T, DirectMemoryAccessBasedOutputWriter> 
+public class DmaBasedObjectSerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 		
 	private SerializerService serializerService = SerializerServiceFactory.getSerializerService();
@@ -52,15 +52,15 @@ public class DmaBasedObjectSerializer<T> extends AbstractDirectMemoryAccessBased
 		super(field);
 		if (Modifier.isFinal(fieldType.getModifiers())) {
 			objectSerializer = new FinalTypedObjectSerializer();
+			serializer = serializerService.getSerializer(fieldType);
 		}
 		else {
 			objectSerializer = new NonFinalTypedObjectSerializer();
-			serializer = serializerService.getSerializer(fieldType);
 		}
 	}
 	
 	public DmaBasedObjectSerializer(Class<T> clazz) {
-		this(clazz, new DirectMemoryAccessBasedDefaultFieldSerializerFactory());
+		this(clazz, new DefaultDirectMemoryAccessBasedFieldSerializerFactory());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -97,7 +97,7 @@ public class DmaBasedObjectSerializer<T> extends AbstractDirectMemoryAccessBased
 	}
 
 	@Override
-	public void serializeData(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
+	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		try {
 			for (FieldSerializer<T, DirectMemoryAccessBasedOutputWriter> fieldSerializer : fieldSerializers) {
 				fieldSerializer.serializeField(obj, outputWriter);
@@ -123,8 +123,8 @@ public class DmaBasedObjectSerializer<T> extends AbstractDirectMemoryAccessBased
 		@SuppressWarnings("unchecked")
 		@Override
 		public void serialize(Object obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-			outputWriter.write(SerDeConstants.OBJECT_DATA_WITHOUT_CLASS_NAME);
-			serializer.serialize(obj, outputWriter);
+			outputWriter.write(SerDeConstants.OBJECT_DATA_WITHOUT_TYPE);
+			serializer.serializeContent(obj, outputWriter);
 		}
 		
 	}
@@ -133,9 +133,14 @@ public class DmaBasedObjectSerializer<T> extends AbstractDirectMemoryAccessBased
 
 		@Override
 		public void serialize(Object obj,  DirectMemoryAccessBasedOutputWriter outputWriter) {
-			outputWriter.write(SerDeConstants.OBJECT_DATA);
-			writeClass(obj.getClass(), outputWriter);
-			serializerService.serialize(obj, outputWriter);
+			if (obj.getClass().equals(fieldType)) {
+				outputWriter.write(SerDeConstants.OBJECT_DATA_WITHOUT_TYPE);
+				serializerService.serializeContent(obj, outputWriter);
+			}
+			else {
+				outputWriter.write(SerDeConstants.OBJECT_DATA);
+				serializerService.serialize(obj, outputWriter);
+			}	
 		}
 		
 	}

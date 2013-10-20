@@ -44,10 +44,10 @@ import com.esotericsoftware.kryo.io.Output;
  * @author Serkan ÖZAL
  */
 @SuppressWarnings("serial")
-// -XX:PermSize=512M -XX:MaxPermSize=1G -Xms1G -Xmx2G
+// -XX:PermSize=512M -XX:MaxPermSize=1G -Xms2G -Xmx4G
 public class SerializationBenchmarkTest implements Serializable {
 
-	private static final int PRE_SERIALIZATION_COUNT = 1000;
+	private static final int PRE_SERIALIZATION_COUNT = 100;
 	private static final int SERIALIZATION_COUNT = 10000;
 	private static final int ROUND_COUNT = 10;
 	private static final boolean WARM_UP = true;

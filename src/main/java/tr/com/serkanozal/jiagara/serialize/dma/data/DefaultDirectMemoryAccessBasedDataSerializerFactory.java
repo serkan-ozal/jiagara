@@ -17,6 +17,7 @@
 package tr.com.serkanozal.jiagara.serialize.dma.data;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 
 import tr.com.serkanozal.jiagara.serialize.dma.array.DmaBasedBooleanArraySerializer;
@@ -47,6 +48,7 @@ import tr.com.serkanozal.jiagara.serialize.dma.primitive.DmaBasedPrimitiveLongSe
 import tr.com.serkanozal.jiagara.serialize.dma.primitive.DmaBasedPrimitiveShortSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedClassSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedCollectionSerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedDateSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedEnumSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedMapSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedStringSerializer;
@@ -54,7 +56,7 @@ import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedStringSerializer
 /**
  * @author Serkan ÖZAL
  */
-public class DirectMemoryAccessBasedDefaultDataSerializerFactory implements DirectMemoryAccessBasedDataSerializerFactory {
+public class DefaultDirectMemoryAccessBasedDataSerializerFactory implements DirectMemoryAccessBasedDataSerializerFactory {
 
 	@Override
 	public <T> DirectMemoryAccessBasedDataSerializer<T> createDataSerializer(Class<T> clazz) {
@@ -149,6 +151,9 @@ public class DirectMemoryAccessBasedDefaultDataSerializerFactory implements Dire
 		}
 		else if (clazz.equals(String.class)) {
 			return new DmaBasedStringSerializer<T>(clazz);
+		}
+		else if (Date.class.isAssignableFrom(clazz)) {
+			return new DmaBasedDateSerializer<T>(clazz);
 		}
 		else if (Collection.class.isAssignableFrom(clazz)) {
 			return new DmaBasedCollectionSerializer<T>(clazz);

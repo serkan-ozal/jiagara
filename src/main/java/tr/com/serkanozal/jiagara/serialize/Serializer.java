@@ -32,6 +32,8 @@ public interface Serializer<T, O extends OutputWriter> {
 	
 	void serialize(T obj, OutputStream os) throws SerializationException;
 	void serialize(T obj, O ow) throws SerializationException;
+	void serializeContent(T obj, OutputStream os) throws SerializationException;
+	void serializeContent(T obj, O ow) throws SerializationException;
 	void release(OutputStream os) throws SerializationException;
 	
 }

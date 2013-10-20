@@ -34,6 +34,7 @@ public interface OutputWriter {
 	void write(long value);
 	void write(double value);
 	void write(String value);
+	void writeAscii(String value);
 	void write(Enum<?> value);
 	
 	void write(byte[] array);
@@ -46,5 +47,7 @@ public interface OutputWriter {
 	void write(double[] array);
 	
 	void writeClassName(Class<?> clazz);
+	byte writeVarInt(int size);
+	byte writeVarInteger(byte additionalCode, int size);
 	
 }

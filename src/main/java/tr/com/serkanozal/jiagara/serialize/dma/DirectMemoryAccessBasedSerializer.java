@@ -21,7 +21,7 @@ import java.io.OutputStream;
 import tr.com.serkanozal.jiagara.exception.SerializationException;
 import tr.com.serkanozal.jiagara.serialize.AbstractSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDataSerializerFactory;
-import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDefaultDataSerializerFactory;
+import tr.com.serkanozal.jiagara.serialize.dma.data.DefaultDirectMemoryAccessBasedDataSerializerFactory;
 import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOutputWriter;
 import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOutputWriterFactory;
 
@@ -31,7 +31,7 @@ import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOut
 public class DirectMemoryAccessBasedSerializer<T> extends AbstractSerializer<T, DirectMemoryAccessBasedOutputWriter> {
 
 	public DirectMemoryAccessBasedSerializer(Class<T> clazz) {
-		super(clazz, new DirectMemoryAccessBasedDefaultDataSerializerFactory());
+		super(clazz, new DefaultDirectMemoryAccessBasedDataSerializerFactory());
 	}
 	
 	public DirectMemoryAccessBasedSerializer(Class<T> clazz, DirectMemoryAccessBasedDataSerializerFactory dataSerializerFactory) {
@@ -63,6 +63,41 @@ public class DirectMemoryAccessBasedSerializer<T> extends AbstractSerializer<T, 
 	public void serialize(T obj, DirectMemoryAccessBasedOutputWriter ow) throws SerializationException {
 		try {
 			dataSerializer.serializeData(obj, ow);
+		} 
+		catch (SerializationException e) {
+			throw e;
+		}
+		catch (Throwable t) {
+			logger.error("Error occured while serialization", t);
+			throw new SerializationException("Error occured while serialization", t);
+		}
+	}
+	
+	@Override
+	public void serializeContent(T obj, OutputStream os) throws SerializationException {
+		DirectMemoryAccessBasedOutputWriter outputWriter = null;
+		try {
+			outputWriter = (DirectMemoryAccessBasedOutputWriter) OUTPUT_WRITER_MAP.get(os);
+			if (outputWriter == null) {
+				outputWriter = 
+					DirectMemoryAccessBasedOutputWriterFactory.createDirectMemoryAccessBasedOutputWriter(os);
+				OUTPUT_WRITER_MAP.put(os, outputWriter);
+			}	
+			serializeContent(obj, outputWriter);
+		}
+		catch (SerializationException e) {
+			throw e;
+		}
+		catch (Throwable t) {
+			logger.error("Error occured while serialization", t);
+			throw new SerializationException("Error occured while serialization", t);
+		}
+	}
+	
+	@Override
+	public void serializeContent(T obj, DirectMemoryAccessBasedOutputWriter ow) throws SerializationException {
+		try {
+			dataSerializer.serializeDataContent(obj, ow);
 		} 
 		catch (SerializationException e) {
 			throw e;

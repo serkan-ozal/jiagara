@@ -36,7 +36,7 @@ import sun.misc.Unsafe;
  * @author Serkan ÖZAL
  */
 @SuppressWarnings("restriction")
-public abstract class AbstractDirectMemoryAccessBasedSerializer<T, O extends DirectMemoryAccessBasedOutputWriter>
+public abstract class AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, O extends DirectMemoryAccessBasedOutputWriter>
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 
 	protected static final Logger logger = LogUtil.getLogger();
@@ -48,13 +48,13 @@ public abstract class AbstractDirectMemoryAccessBasedSerializer<T, O extends Dir
 	protected long codeOffsetInClassRegistry;
 	protected Class<T> clazz;
 
-	public AbstractDirectMemoryAccessBasedSerializer(Class<T> clazz) {
+	public AbstractDirectMemoryAccessBasedFieldAndDataSerializer(Class<T> clazz) {
 		this.clazz = clazz;
 		unsafe = JvmUtil.getUnsafe();
 		codeOffsetInClassRegistry =  unsafe.objectFieldOffset(ReflectionUtil.getField(ClassRegistry.class, "code")); 
 	}
 	
-	public AbstractDirectMemoryAccessBasedSerializer(Field field) {
+	public AbstractDirectMemoryAccessBasedFieldAndDataSerializer(Field field) {
 		this.field = field;
 		fieldType = field.getType();
 		unsafe = JvmUtil.getUnsafe();
@@ -62,9 +62,30 @@ public abstract class AbstractDirectMemoryAccessBasedSerializer<T, O extends Dir
 		codeOffsetInClassRegistry =  unsafe.objectFieldOffset(ReflectionUtil.getField(ClassRegistry.class, "code")); 
 	}
 	
+	public void serializeData(T obj, O outputWriter) {
+		if (obj == null) {
+			outputWriter.writeNull();
+		}
+		else {
+			writeClass(obj.getClass(), outputWriter);
+			serializeDataContent(obj, outputWriter);
+		}	
+	};
+	
 	protected void writeClass(Class<?> clazz, O ow) {
 		SerializationContext context = SerializerService.SERIALIZATION_CONTEXT.get();
 		if (context != null) {
+			Integer classCode = context.getClassCode(clazz);
+			if (classCode != null) {
+				ow.writeVarInteger(SerDeConstants.CLASS_CODE, classCode);
+			}
+			else {
+				ClassRegistry cr = context.putClassRegistry(clazz);
+				ow.write(SerDeConstants.CLASS_NAME_WITH_CODE);
+				ow.writeClassName(clazz);
+				ow.writeInteger(cr, codeOffsetInClassRegistry);
+			}
+			/*
 			ClassRegistry cr = context.getClassRegistry(clazz);
 			if (cr != null) {
 				ow.write(SerDeConstants.CLASS_CODE);
@@ -72,10 +93,11 @@ public abstract class AbstractDirectMemoryAccessBasedSerializer<T, O extends Dir
 			}
 			else {
 				cr = context.putClassRegistry(clazz);
-				ow.write(SerDeConstants.CLASS_NAME_WIT_CODE);
+				ow.write(SerDeConstants.CLASS_NAME_WITH_CODE);
 				ow.writeClassName(clazz);
 				ow.writeInteger(cr, codeOffsetInClassRegistry);
 			}
+			*/
 		}
 		else {
 			ow.write(SerDeConstants.CLASS_NAME_WITHOUT_CODE);

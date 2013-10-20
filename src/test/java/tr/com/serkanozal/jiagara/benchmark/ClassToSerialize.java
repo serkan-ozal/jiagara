@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -72,7 +73,19 @@ public class ClassToSerialize implements Serializable {
 	
 	///////////////////////////////////////////////////////////////////////
 	
+	protected Boolean[] booleanObjectArrayValue;
+	protected Byte[] byteObjectArrayValue;
+	protected Character[] charObjectArrayValue;
+	protected Short[] shortObjectArrayValue;
+	protected Integer[] intObjectArrayValue;
+	protected Float[] floatObjectArrayValue;
+	protected Long[] longObjectArrayValue;
+	protected Double[] doubleObjectArrayValue;
+	
+	///////////////////////////////////////////////////////////////////////
+	
 	protected String stringValue = "str";
+	protected Date dateValue = new Date();
 	protected EnumToSerialize enumValue;
 	protected AggregatedClassToSerialize aggregatedClassValue = new AggregatedClassToSerialize();
 	
@@ -104,7 +117,7 @@ public class ClassToSerialize implements Serializable {
 	protected Map<String, EnumToSerialize> enumValueMap = new HashMap<String, EnumToSerialize>();
 	protected Map<String, AggregatedClassToSerialize> aggregatedClassValueMap = new HashMap<String, AggregatedClassToSerialize>();
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	public <T extends ClassToSerialize> T randomize() {
 		byteValue = (byte) RANDOM.nextInt(256);
 		booleanValue = RANDOM.nextBoolean();
@@ -146,7 +159,7 @@ public class ClassToSerialize implements Serializable {
 		}
 		intArrayValue = new int[ARRAY_LENGTH];
 		for (int i = 0; i < intArrayValue.length; i++) {
-			intArrayValue[i] = (short) RANDOM.nextInt();
+			intArrayValue[i] = RANDOM.nextInt();
 		}
 		floatArrayValue = new float[ARRAY_LENGTH];
 		for (int i = 0; i < floatArrayValue.length; i++) {
@@ -163,7 +176,43 @@ public class ClassToSerialize implements Serializable {
 		
 		///////////////////////////////////////////////////////////////////////
 		
+		booleanObjectArrayValue = new Boolean[ARRAY_LENGTH];
+		for (int i = 0; i < booleanObjectArrayValue.length; i++) {
+			booleanObjectArrayValue[i] = RANDOM.nextBoolean();
+		}
+		byteObjectArrayValue = new Byte[ARRAY_LENGTH];
+		for (int i = 0; i < byteObjectArrayValue.length; i++) {
+			byteObjectArrayValue[i] = (byte) RANDOM.nextInt(256);
+		}
+		charObjectArrayValue = new Character[ARRAY_LENGTH];
+		for (int i = 0; i < charObjectArrayValue.length; i++) {
+			charObjectArrayValue[i] = (char) RANDOM.nextInt(65536);
+		}
+		shortObjectArrayValue = new Short[ARRAY_LENGTH];
+		for (int i = 0; i < shortObjectArrayValue.length; i++) {
+			shortObjectArrayValue[i] = (short) RANDOM.nextInt(65536);
+		}
+		intObjectArrayValue = new Integer[ARRAY_LENGTH];
+		for (int i = 0; i < intObjectArrayValue.length; i++) {
+			intObjectArrayValue[i] = RANDOM.nextInt();
+		}
+		floatObjectArrayValue = new Float[ARRAY_LENGTH];
+		for (int i = 0; i < floatObjectArrayValue.length; i++) {
+			floatObjectArrayValue[i] = RANDOM.nextFloat();
+		}
+		longObjectArrayValue = new Long[ARRAY_LENGTH];
+		for (int i = 0; i < longObjectArrayValue.length; i++) {
+			longObjectArrayValue[i] = RANDOM.nextLong();
+		}
+		doubleObjectArrayValue = new Double[ARRAY_LENGTH];
+		for (int i = 0; i < doubleObjectArrayValue.length; i++) {
+			doubleObjectArrayValue[i] = RANDOM.nextDouble();
+		}
+		
+		///////////////////////////////////////////////////////////////////////
+		
 		stringValue = UUID.randomUUID().toString();
+		dateValue = new Date(1900 + (byte) RANDOM.nextInt(256), RANDOM.nextInt(12), RANDOM.nextInt(28));
 		enumValue = EnumToSerialize.random();
 		aggregatedClassValue = new AggregatedClassToSerialize().randomize();
 		

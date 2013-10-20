@@ -35,6 +35,7 @@ public interface DirectMemoryAccessBasedOutputWriter extends BufferedOutputWrite
 	void writeLong(Object obj, long offset);
 	void writeDouble(Object obj, long offset);
 	void writeString(Object obj, long offset);
+	void writeAsciiString(Object obj, long offset);
 	void writeEnum(Object obj, long offset);
 	
 	void writeByteArray(Object obj, long offset);

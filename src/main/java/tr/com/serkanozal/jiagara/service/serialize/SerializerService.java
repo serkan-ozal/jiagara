@@ -18,16 +18,23 @@ package tr.com.serkanozal.jiagara.service.serialize;
 
 import java.io.OutputStream;
 
+import tr.com.serkanozal.jiagara.domain.model.context.SerializationContext;
 import tr.com.serkanozal.jiagara.exception.SerializationException;
 import tr.com.serkanozal.jiagara.serialize.Serializer;
+import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
 
 /**
  * @author Serkan ÖZAL
  */
 public interface SerializerService {
 
-	<T> Serializer<T> getSerializer(Class<T> clazz);
+	ThreadLocal<SerializationContext> SERIALIZATION_CONTEXT = new ThreadLocal<SerializationContext>();
+	
+	<T, O extends OutputWriter> Serializer<T, O> getSerializer(Class<T> clazz);
 	<T> void serialize(T obj, OutputStream os) throws SerializationException;
+	<T> void serialize(T obj, OutputWriter ow) throws SerializationException;
+	<T> void serializeContent(T obj, OutputStream os) throws SerializationException;
+	<T> void serializeContent(T obj, OutputWriter ow) throws SerializationException;
 	void release(OutputStream os) throws SerializationException;
 	
 }

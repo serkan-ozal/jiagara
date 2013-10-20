@@ -23,7 +23,7 @@ import java.lang.reflect.Type;
 import java.util.Map;
 
 import tr.com.serkanozal.jiagara.serialize.Serializer;
-import tr.com.serkanozal.jiagara.serialize.dma.AbstractDirectMemoryAccessBasedSerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.AbstractDirectMemoryAccessBasedFieldAndDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.field.DirectMemoryAccessBasedFieldSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOutputWriter;
@@ -34,14 +34,14 @@ import tr.com.serkanozal.jiagara.util.SerDeConstants;
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedMapSerializer<T> extends AbstractDirectMemoryAccessBasedSerializer<T, DirectMemoryAccessBasedOutputWriter> 
+public class DmaBasedMapSerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 		
 	private SerializerService serializerService = SerializerServiceFactory.getSerializerService();
 	private MapElementSerializer keyElementSerializer;
 	private MapElementSerializer valueElementSerializer;
-	private Class<?> keyTypeClass;
-	private Class<?> valueTypeClass;
+	private Class<?> keyTypeClass = Object.class;
+	private Class<?> valueTypeClass = Object.class;
 	@SuppressWarnings("rawtypes")
 	private Serializer keySerializer;
 	@SuppressWarnings("rawtypes")
@@ -56,23 +56,23 @@ public class DmaBasedMapSerializer<T> extends AbstractDirectMemoryAccessBasedSer
 		if (genericType instanceof ParameterizedType) {
 			ParameterizedType mapType = (ParameterizedType)genericType;
 			keyTypeClass = (Class<?>)mapType.getActualTypeArguments()[0];
+			keySerializer = serializerService.getSerializer(keyTypeClass);
 			if (Modifier.isFinal(keyTypeClass.getModifiers())) {
-				keySerializer = serializerService.getSerializer(keyTypeClass);
 				keyElementSerializer = new KnownAndFinalTypedMapElementSerializer(keySerializer);
 				useKeyType = true;
 			}
 			valueTypeClass = (Class<?>)mapType.getActualTypeArguments()[1];
+			valueSerializer = serializerService.getSerializer(valueTypeClass);
 			if (Modifier.isFinal(valueTypeClass.getModifiers())) {
-				valueSerializer = serializerService.getSerializer(valueTypeClass);
 				valueElementSerializer = new KnownAndFinalTypedMapElementSerializer(valueSerializer);
 				useValueType = true;
 			}
 		}	
 		if (keyElementSerializer == null) {
-			keyElementSerializer = new UnknownOrNonFinalTypedMapElementSerializer();
+			keyElementSerializer = new UnknownOrNonFinalTypedMapElementSerializer(keySerializer, keyTypeClass);
 		}
 		if (valueElementSerializer == null) {
-			valueElementSerializer = new UnknownOrNonFinalTypedMapElementSerializer();
+			valueElementSerializer = new UnknownOrNonFinalTypedMapElementSerializer(valueSerializer, valueTypeClass);
 		}
 		if (useKeyType == false && useValueType == false) {
 			mapType = SerDeConstants.MAP_WITHOUT_KEY_TYPE_AND_WITHOUT_VALUE_TYPE;
@@ -91,10 +91,10 @@ public class DmaBasedMapSerializer<T> extends AbstractDirectMemoryAccessBasedSer
 	public DmaBasedMapSerializer(Class<T> clazz) {
 		super(clazz);
 		if (keyElementSerializer == null) {
-			keyElementSerializer = new UnknownOrNonFinalTypedMapElementSerializer();
+			keyElementSerializer = new UnknownOrNonFinalTypedMapElementSerializer(keySerializer, keyTypeClass);
 		}
 		if (valueElementSerializer == null) {
-			valueElementSerializer = new UnknownOrNonFinalTypedMapElementSerializer();
+			valueElementSerializer = new UnknownOrNonFinalTypedMapElementSerializer(valueSerializer, valueTypeClass);
 		}
 	}
 	
@@ -106,9 +106,8 @@ public class DmaBasedMapSerializer<T> extends AbstractDirectMemoryAccessBasedSer
 			outputWriter.writeNull();
 		}
 		else {
-			outputWriter.write(mapType);
 			writeClass(mapField.getClass(), outputWriter); 
-			outputWriter.write(mapField.size()); 
+			outputWriter.writeVarInteger(mapType, mapField.size()); 
 			for (Map.Entry<?, ?> e : mapField.entrySet()) {
 				keyElementSerializer.serialize(e.getKey(), outputWriter);
 				valueElementSerializer.serialize(e.getValue(), outputWriter);
@@ -117,15 +116,13 @@ public class DmaBasedMapSerializer<T> extends AbstractDirectMemoryAccessBasedSer
 	}
 
 	@Override
-	public void serializeData(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
+	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		Map<?, ?> o = (Map<?, ?>)obj;
 		if (o == null) {
 			outputWriter.writeNull();
 		}
 		else {
-			outputWriter.write(mapType);
-			writeClass(o.getClass(), outputWriter); 
-			outputWriter.write(o.size()); 
+			outputWriter.writeVarInteger(mapType, o.size());
 			for (Map.Entry<?, ?> e : o.entrySet()) {
 				keyElementSerializer.serialize(e.getKey(), outputWriter);
 				valueElementSerializer.serialize(e.getValue(), outputWriter);
@@ -152,17 +149,39 @@ public class DmaBasedMapSerializer<T> extends AbstractDirectMemoryAccessBasedSer
 		@SuppressWarnings("unchecked")
 		@Override
 		public void serialize(Object element, DirectMemoryAccessBasedOutputWriter outputWriter) {
-			serializer.serialize(element, outputWriter);
+			serializer.serializeContent(element, outputWriter);
 		}
 		
 	}
 	
 	private class UnknownOrNonFinalTypedMapElementSerializer implements MapElementSerializer {
 
+		@SuppressWarnings("rawtypes")
+		private Serializer serializer;
+		private Class<?> managedType;
+		
+		@SuppressWarnings("rawtypes")
+		private UnknownOrNonFinalTypedMapElementSerializer(Serializer serializer, Class<?> managedType) {
+			this.serializer = serializer;
+			this.managedType = managedType;
+		}
+		
+		@SuppressWarnings("unchecked")
 		@Override
 		public void serialize(Object element, DirectMemoryAccessBasedOutputWriter outputWriter) {
-			writeClass(element.getClass(), outputWriter); 
-			serializerService.serialize(element, outputWriter);
+			if (element.getClass().equals(managedType)) {
+				outputWriter.write(SerDeConstants.OBJECT_DATA_WITHOUT_TYPE);
+				if (serializer != null) {
+					serializer.serializeContent(element, outputWriter);
+				}
+				else {
+					serializerService.serializeContent(element, outputWriter);
+				}
+			}
+			else {
+				outputWriter.write(SerDeConstants.OBJECT_DATA);
+				serializerService.serialize(element, outputWriter);
+			}	
 		}
 		
 	}

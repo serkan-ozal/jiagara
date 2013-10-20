@@ -18,6 +18,7 @@ package tr.com.serkanozal.jiagara.serialize.dma.field;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 
 import tr.com.serkanozal.jiagara.serialize.dma.array.DmaBasedBooleanArraySerializer;
@@ -48,6 +49,7 @@ import tr.com.serkanozal.jiagara.serialize.dma.primitive.DmaBasedPrimitiveLongSe
 import tr.com.serkanozal.jiagara.serialize.dma.primitive.DmaBasedPrimitiveShortSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedClassSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedCollectionSerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedDateSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedEnumSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedMapSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedStringSerializer;
@@ -55,7 +57,7 @@ import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedStringSerializer
 /**
  * @author Serkan ÖZAL
  */
-public class DirectMemoryAccessBasedDefaultFieldSerializerFactory implements DirectMemoryAccessBasedFieldSerializerFactory {
+public class DefaultDirectMemoryAccessBasedFieldSerializerFactory implements DirectMemoryAccessBasedFieldSerializerFactory {
 
 	@Override
 	public <T> DirectMemoryAccessBasedFieldSerializer<T> createFieldSerializer(Field field) {
@@ -151,6 +153,9 @@ public class DirectMemoryAccessBasedDefaultFieldSerializerFactory implements Dir
 		}
 		else if (fieldClass.equals(String.class)) {
 			return new DmaBasedStringSerializer<T>(field);
+		}
+		else if (Date.class.isAssignableFrom(fieldClass)) {
+			return new DmaBasedDateSerializer<T>(field);
 		}
 		else if (Collection.class.isAssignableFrom(fieldClass)) {
 			return new DmaBasedCollectionSerializer<T>(field);

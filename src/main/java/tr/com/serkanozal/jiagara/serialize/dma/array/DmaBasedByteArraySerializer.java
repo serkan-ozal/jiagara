@@ -18,7 +18,7 @@ package tr.com.serkanozal.jiagara.serialize.dma.array;
 
 import java.lang.reflect.Field;
 
-import tr.com.serkanozal.jiagara.serialize.dma.AbstractDirectMemoryAccessBasedSerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.AbstractDirectMemoryAccessBasedFieldAndDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.field.DirectMemoryAccessBasedFieldSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOutputWriter;
@@ -28,7 +28,7 @@ import tr.com.serkanozal.jiagara.util.SerDeConstants;
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedByteArraySerializer<T> extends AbstractDirectMemoryAccessBasedSerializer<T, DirectMemoryAccessBasedOutputWriter> 
+public class DmaBasedByteArraySerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 	
 	public DmaBasedByteArraySerializer(Field field) {
@@ -45,7 +45,7 @@ public class DmaBasedByteArraySerializer<T> extends AbstractDirectMemoryAccessBa
 	}
 
 	@Override
-	public void serializeData(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
+	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		byte[] array = (byte[])obj;
 		if (array == null) {
 			outputWriter.writeNull();

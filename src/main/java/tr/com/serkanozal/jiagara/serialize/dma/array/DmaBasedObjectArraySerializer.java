@@ -17,8 +17,10 @@
 package tr.com.serkanozal.jiagara.serialize.dma.array;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
-import tr.com.serkanozal.jiagara.serialize.dma.AbstractDirectMemoryAccessBasedSerializer;
+import tr.com.serkanozal.jiagara.serialize.Serializer;
+import tr.com.serkanozal.jiagara.serialize.dma.AbstractDirectMemoryAccessBasedFieldAndDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.field.DirectMemoryAccessBasedFieldSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOutputWriter;
@@ -29,17 +31,34 @@ import tr.com.serkanozal.jiagara.util.SerDeConstants;
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedObjectArraySerializer<T> extends AbstractDirectMemoryAccessBasedSerializer<T, DirectMemoryAccessBasedOutputWriter> 
+public class DmaBasedObjectArraySerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 	
 	private SerializerService serializerService = SerializerServiceFactory.getSerializerService();
+	private ObjectElementSerializer objectElementSerializer;
+	@SuppressWarnings("rawtypes")
+	private Serializer serializer;
 	
 	public DmaBasedObjectArraySerializer(Field field) {
 		super(field);
+		if (Modifier.isFinal(fieldType.getComponentType().getModifiers())) {
+			objectElementSerializer = new FinalTypedObjectElementSerializer();
+			serializer = serializerService.getSerializer(fieldType.getComponentType());
+		}
+		else {
+			objectElementSerializer = new NonFinalTypedObjectElementSerializer();
+			serializer = serializerService.getSerializer(fieldType.getComponentType());
+		}
 	}
 	
 	public DmaBasedObjectArraySerializer(Class<T> clazz) {
 		super(clazz);
+		if (Modifier.isFinal(clazz.getComponentType().getModifiers())) {
+			objectElementSerializer = new FinalTypedObjectElementSerializer();
+		}
+		else {
+			objectElementSerializer = new NonFinalTypedObjectElementSerializer();
+		}
 	}
 	
 	@SuppressWarnings("restriction")
@@ -50,27 +69,74 @@ public class DmaBasedObjectArraySerializer<T> extends AbstractDirectMemoryAccess
 			outputWriter.writeNull();
 		}
 		else {
-			outputWriter.write(SerDeConstants.OBJECT_DATA);
-			outputWriter.write(arrayField.length); 
-			for (Object arrayObj : arrayField) {
-				serializerService.serialize(arrayObj, outputWriter);
-			}
+			writeClass(arrayField.getClass(), outputWriter); 
+			objectElementSerializer.serialize(arrayField, outputWriter);
 		}
 	}
 
 	@Override
-	public void serializeData(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		Object[] array = (Object[])obj;
-		if (array == null) {
+	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
+		Object[] o = (Object[])obj;
+		if (o == null) {
 			outputWriter.writeNull();
 		}
 		else {
-			outputWriter.write(SerDeConstants.OBJECT_DATA);
-			outputWriter.write(array.length); 
+			objectElementSerializer.serialize(o, outputWriter);
+		}
+	}
+	
+	private interface ObjectElementSerializer {
+		
+		void serialize(Object[] array, DirectMemoryAccessBasedOutputWriter outputWriter);
+		
+	}
+	
+	private class FinalTypedObjectElementSerializer implements ObjectElementSerializer {
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public void serialize(Object[] array, DirectMemoryAccessBasedOutputWriter outputWriter) {
+			outputWriter.writeVarInteger(SerDeConstants.ARRAY_DATA_WITHOUT_TYPE, array.length); 
 			for (Object o : array) {
-				serializerService.serialize(o, outputWriter);
+				serializer.serializeContent(o, outputWriter);
 			}
 		}
+		
+	}
+	
+	private class NonFinalTypedObjectElementSerializer implements ObjectElementSerializer {
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public void serialize(Object[] array, DirectMemoryAccessBasedOutputWriter outputWriter) {
+			Class<?> arrayComponentType = array.getClass().getComponentType();
+			boolean allElementsAreSameTypeWithArray = true;
+			for (Object o : array) {
+				if (o != null && o.getClass().equals(arrayComponentType) == false) {
+					allElementsAreSameTypeWithArray = false;
+				}
+			}	
+			if (allElementsAreSameTypeWithArray) {
+				outputWriter.writeVarInteger(SerDeConstants.ARRAY_DATA_WITHOUT_TYPE, array.length); 
+				for (Object o : array) {
+					serializer.serializeContent(o, outputWriter);
+				}
+			}
+			else {
+				outputWriter.writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
+				for (Object o : array) {
+					if (o.getClass().equals(arrayComponentType)) {
+						outputWriter.write(SerDeConstants.ARRAY_DATA_WITHOUT_TYPE);
+						serializer.serializeContent(o, outputWriter);
+					}
+					else {
+						outputWriter.write(SerDeConstants.ARRAY_DATA);
+						serializerService.serialize(o, outputWriter);
+					}
+				}
+			}	
+		}
+		
 	}
 
 }
