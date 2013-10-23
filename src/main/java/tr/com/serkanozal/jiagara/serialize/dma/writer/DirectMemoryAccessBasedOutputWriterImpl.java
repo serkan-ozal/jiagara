@@ -17,6 +17,7 @@
 package tr.com.serkanozal.jiagara.serialize.dma.writer;
 
 import java.io.OutputStream;
+import java.nio.ByteOrder;
 
 import tr.com.serkanozal.jiagara.domain.builder.buffer.dma.DirectMemoryAccessBasedWritableBufferBuilder;
 import tr.com.serkanozal.jiagara.domain.model.buffer.dma.DirectMemoryAccessBasedWritableBuffer;
@@ -239,9 +240,17 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 			buffer.checkCapacitiyAndHandle(totalSize);
 			totalSize = size + writeVarInteger(SerDeConstants.STRING_DATA_WITH_OPTIMIZATION, size);
 			char[] valueArray = (char[])unsafe.getObject(value, valueArrayOffsetInString);
-			for (int i = 0; i < length; i++) {
-				unsafe.putByte( bufferArray, (long)(byteArrayBase + (i * byteArrayScale)),
-								unsafe.getByte(valueArray, (long)(charArrayBase + (i << 1))));
+			if (nativeByteOrder == ByteOrder.BIG_ENDIAN) {
+				for (int i = 0; i < length; i++) {
+					unsafe.putByte( bufferArray, (long)(byteArrayBase + (i * byteArrayScale)),
+									unsafe.getByte(valueArray, (long)(charArrayBase + (i << 1) + 1)));
+				}
+			}
+			else {
+				for (int i = 0; i < length; i++) {
+					unsafe.putByte( bufferArray, (long)(byteArrayBase + (i * byteArrayScale)),
+									unsafe.getByte(valueArray, (long)(charArrayBase + (i << 1))));
+				}
 			}
 			buffer.forward(size);
 		}	
@@ -263,7 +272,7 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 			write(SerDeConstants.NULL_ENUM_ORDINAL);
 		}
 		else {
-			writeVarInt(value.ordinal());
+			writeVarInteger(value.ordinal());
 		}
 	}
 

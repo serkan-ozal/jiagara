@@ -47,7 +47,9 @@ public interface OutputWriter {
 	void write(double[] array);
 	
 	void writeClassName(Class<?> clazz);
-	byte writeVarInt(int size);
-	byte writeVarInteger(byte additionalCode, int size);
+	byte writeVarInteger(int value);
+	byte writeVarInteger(byte additionalCode, int value);
+	byte writeVarLong(long value);
+	byte writeVarLong(byte additionalCode, long value);
 	
 }

@@ -18,6 +18,7 @@ package tr.com.serkanozal.jiagara.serialize.writer;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteOrder;
 
 import tr.com.serkanozal.jiagara.domain.model.buffer.WritableBuffer;
 import tr.com.serkanozal.jiagara.exception.SerializationException;
@@ -29,15 +30,27 @@ import tr.com.serkanozal.jiagara.util.SerDeConstants;
  */
 public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> implements BufferedOutputWriter<B> {
 
+	protected static final ByteOrder nativeByteOrder = ByteOrder.nativeOrder();
+	
 	protected OutputStream os;
 	protected B buffer;
 	protected byte[] bufferArray;
+	protected ByteOrderAwareBufferedOutputWriter byteOrderAwareBufferedOutputWriter;
 	
 	public AbstractBufferedOutputWriter(OutputStream os, B buffer) {
 		this.os = os;
 		this.buffer = buffer;
 		this.bufferArray = buffer.getBufferArray();
 		buffer.setBufferListener(this);
+		if (nativeByteOrder == ByteOrder.BIG_ENDIAN) {
+			byteOrderAwareBufferedOutputWriter = new BigEndianBufferedOutputWriter();
+		}
+		else if (nativeByteOrder == ByteOrder.LITTLE_ENDIAN) {
+			byteOrderAwareBufferedOutputWriter = new LittleEndianBufferedOutputWriter();
+		}
+		else {
+			throw new AssertionError("Unsupported byte order: " + nativeByteOrder);
+		}
 	}
 	
 	@Override
@@ -88,74 +101,32 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 
 	@Override
 	public void write(char value) {
-		buffer.checkCapacitiyAndHandle(JvmUtil.CHAR_SIZE);
-		int position = buffer.getIndex();
-		bufferArray[position++] = (byte)(value >> 8);
-		bufferArray[position++] = (byte)value;
-		buffer.move(position);
+		byteOrderAwareBufferedOutputWriter.write(value);
 	}
 
 	@Override
 	public void write(short value) {
-		buffer.checkCapacitiyAndHandle(JvmUtil.SHORT_SIZE);
-		int position = buffer.getIndex();
-		bufferArray[position++] = (byte)(value >> 8);
-		bufferArray[position++] = (byte)value;
-		buffer.move(position);
+		byteOrderAwareBufferedOutputWriter.write(value);
 	}
 
 	@Override
 	public void write(int value) {
-		buffer.checkCapacitiyAndHandle(JvmUtil.INT_SIZE);
-		int position = buffer.getIndex();
-		bufferArray[position++] = (byte)(value >> 24);
-		bufferArray[position++] = (byte)(value >> 16);
-		bufferArray[position++] = (byte)(value >> 8);
-		bufferArray[position++] = (byte)value;
-		buffer.move(position);	
+		byteOrderAwareBufferedOutputWriter.write(value);
 	}
 
 	@Override
 	public void write(float value) {
-		int rawValue = Float.floatToRawIntBits(value);
-		buffer.checkCapacitiyAndHandle(JvmUtil.FLOAT_SIZE);
-		int position = buffer.getIndex();
-		bufferArray[position++] = (byte)(rawValue >> 24);
-		bufferArray[position++] = (byte)(rawValue >> 16);
-		bufferArray[position++] = (byte)(rawValue >> 8);
-		bufferArray[position++] = (byte)rawValue;
-		buffer.move(position);
+		byteOrderAwareBufferedOutputWriter.write(value);
 	}
 
 	@Override
 	public void write(long value) {
-		buffer.checkCapacitiyAndHandle(JvmUtil.LONG_SIZE);
-		int position = buffer.getIndex();
-		bufferArray[position++] = (byte)(value >> 56);
-		bufferArray[position++] = (byte)(value >> 48);
-		bufferArray[position++] = (byte)(value >> 40);
-		bufferArray[position++] = (byte)(value >> 32);
-		bufferArray[position++] = (byte)(value >> 24);
-		bufferArray[position++] = (byte)(value >> 16);
-		bufferArray[position++] = (byte)(value >> 8);
-		bufferArray[position++] = (byte)value;
-		buffer.move(position);
+		byteOrderAwareBufferedOutputWriter.write(value);
 	}
 
 	@Override
 	public void write(double value) {
-		long rawValue = Double.doubleToRawLongBits(value);
-		buffer.checkCapacitiyAndHandle(JvmUtil.DOUBLE_SIZE);
-		int position = buffer.getIndex();
-		bufferArray[position++] = (byte)(rawValue >> 56);
-		bufferArray[position++] = (byte)(rawValue >> 48);
-		bufferArray[position++] = (byte)(rawValue >> 40);
-		bufferArray[position++] = (byte)(rawValue >> 32);
-		bufferArray[position++] = (byte)(rawValue >> 24);
-		bufferArray[position++] = (byte)(rawValue >> 16);
-		bufferArray[position++] = (byte)(rawValue >> 8);
-		bufferArray[position++] = (byte)value;
-		buffer.move(position);
+		byteOrderAwareBufferedOutputWriter.write(value);
 	}
 
 	@Override
@@ -195,42 +166,91 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	}
 	
 	@Override
-	public byte writeVarInteger(byte additionalCode, int size) {
-		if ((size & 0xFFF7FF00) == 0) {
+	public byte writeVarInteger(byte additionalCode, int value) {
+		if ((value & 0xFFFFFF80) == 0) {
 			write((byte)(additionalCode | SerDeConstants.SIZE_1_BYTE));
-			write((byte)size);
+			write((byte)value);
 			return JvmUtil.BYTE_SIZE;
-			
 		}
-		else if ((size & 0xFF7F0000) == 0) {
+		else if ((value & 0xFFFF8000) == 0) {
 			write((byte)(additionalCode | SerDeConstants.SIZE_2_BYTE));
-			write((short)size);
+			write((short)value);
 			return JvmUtil.SHORT_SIZE;
 		}
 		else {
 			write((byte)(additionalCode | SerDeConstants.SIZE_4_BYTE));
-			write(size);
+			write(value);
 			return JvmUtil.INT_SIZE;
 		}
 	}
 	
 	@Override
-	public byte writeVarInt(int size) {
-		if ((size & 0xFFF7FF00) == 0) {
+	public byte writeVarInteger(int value) {
+		if ((value & 0xFFFFFF80) == 0) {
 			write((byte)(SerDeConstants.SIZE_1_BYTE));
-			write((byte)size);
+			write((byte)value);
 			return JvmUtil.BYTE_SIZE;
 			
 		}
-		else if ((size & 0xFF7F0000) == 0) {
+		else if ((value & 0xFFFF8000) == 0) {
 			write((byte)(SerDeConstants.SIZE_2_BYTE));
-			write((short)size);
+			write((short)value);
 			return JvmUtil.SHORT_SIZE;
 		}
 		else {
 			write((byte)(SerDeConstants.SIZE_4_BYTE));
-			write(size);
+			write(value);
 			return JvmUtil.INT_SIZE;
+		}
+	}
+	
+	@Override
+	public byte writeVarLong(long value) {
+		if ((value & 0xFFFFFFFFFFFFFF80L) == 0) {
+			write((byte)(SerDeConstants.SIZE_1_BYTE));
+			write((byte)value);
+			return JvmUtil.BYTE_SIZE;
+			
+		}
+		else if ((value & 0xFFFFFFFFFFFF8000L) == 0) {
+			write((byte)(SerDeConstants.SIZE_2_BYTE));
+			write((short)value);
+			return JvmUtil.SHORT_SIZE;
+		}
+		else if ((value & 0xFFFFFFFF80000000L) == 0) {
+			write((byte)(SerDeConstants.SIZE_4_BYTE));
+			write((int)value);
+			return JvmUtil.INT_SIZE;
+		}
+		else {
+			write((byte)(SerDeConstants.SIZE_8_BYTE));
+			write(value);
+			return JvmUtil.LONG_SIZE;
+		}
+	}
+	
+	@Override
+	public byte writeVarLong(byte additionalCode, long value) {
+		if ((value & 0xFFFFFFFFFFFFFF80L) == 0) {
+			write((byte)(SerDeConstants.SIZE_1_BYTE));
+			write((byte)value);
+			return JvmUtil.BYTE_SIZE;
+			
+		}
+		else if ((value & 0xFFFFFFFFFFFF8000L) == 0) {
+			write((byte)(SerDeConstants.SIZE_2_BYTE));
+			write((short)value);
+			return JvmUtil.SHORT_SIZE;
+		}
+		else if ((value & 0xFFFFFFFF80000000L) == 0) {
+			write((byte)(SerDeConstants.SIZE_4_BYTE));
+			write((int)value);
+			return JvmUtil.INT_SIZE;
+		}
+		else {
+			write((byte)(SerDeConstants.SIZE_8_BYTE));
+			write(value);
+			return JvmUtil.LONG_SIZE;
 		}
 	}
 	
@@ -240,7 +260,7 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 			write(SerDeConstants.NULL_ENUM_ORDINAL);
 		}
 		else {
-			writeVarInt(value.ordinal());
+			writeVarInteger(value.ordinal());
 		}
 	}
 
@@ -351,6 +371,169 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	@Override
 	public void writeClassName(Class<?> clazz) {
 		write(clazz.getName());
+	}
+	
+	private interface ByteOrderAwareBufferedOutputWriter {
+		
+		void write(char value);
+		void write(short value);
+		void write(int value);
+		void write(float value);
+		void write(long value);
+		void write(double value);
+		
+	}
+	
+	private class LittleEndianBufferedOutputWriter implements ByteOrderAwareBufferedOutputWriter {
+
+		@Override
+		public void write(char value) {
+			buffer.checkCapacitiyAndHandle(JvmUtil.CHAR_SIZE);
+			int position = buffer.getIndex();
+			bufferArray[position++] = (byte)value;
+			bufferArray[position++] = (byte)(value >> 8);
+			buffer.move(position);
+		}
+
+		@Override
+		public void write(short value) {
+			buffer.checkCapacitiyAndHandle(JvmUtil.SHORT_SIZE);
+			int position = buffer.getIndex();
+			bufferArray[position++] = (byte)value;
+			bufferArray[position++] = (byte)(value >> 8);
+			buffer.move(position);
+		}
+
+		@Override
+		public void write(int value) {
+			buffer.checkCapacitiyAndHandle(JvmUtil.INT_SIZE);
+			int position = buffer.getIndex();
+			bufferArray[position++] = (byte)value;
+			bufferArray[position++] = (byte)(value >> 8);
+			bufferArray[position++] = (byte)(value >> 16);
+			bufferArray[position++] = (byte)(value >> 24);
+			buffer.move(position);	
+		}
+
+		@Override
+		public void write(float value) {
+			int rawValue = Float.floatToRawIntBits(value);
+			buffer.checkCapacitiyAndHandle(JvmUtil.FLOAT_SIZE);
+			int position = buffer.getIndex();
+			bufferArray[position++] = (byte)rawValue;
+			bufferArray[position++] = (byte)(rawValue >> 8);
+			bufferArray[position++] = (byte)(rawValue >> 16);
+			bufferArray[position++] = (byte)(rawValue >> 24);
+			buffer.move(position);
+		}
+
+		@Override
+		public void write(long value) {
+			buffer.checkCapacitiyAndHandle(JvmUtil.LONG_SIZE);
+			int position = buffer.getIndex();
+			bufferArray[position++] = (byte)value;
+			bufferArray[position++] = (byte)(value >> 8);
+			bufferArray[position++] = (byte)(value >> 16);
+			bufferArray[position++] = (byte)(value >> 24);
+			bufferArray[position++] = (byte)(value >> 32);
+			bufferArray[position++] = (byte)(value >> 40);
+			bufferArray[position++] = (byte)(value >> 48);
+			bufferArray[position++] = (byte)(value >> 56);
+			buffer.move(position);
+		}
+
+		@Override
+		public void write(double value) {
+			long rawValue = Double.doubleToRawLongBits(value);
+			buffer.checkCapacitiyAndHandle(JvmUtil.DOUBLE_SIZE);
+			int position = buffer.getIndex();
+			bufferArray[position++] = (byte)value;
+			bufferArray[position++] = (byte)(rawValue >> 8);
+			bufferArray[position++] = (byte)(rawValue >> 16);
+			bufferArray[position++] = (byte)(rawValue >> 24);
+			bufferArray[position++] = (byte)(rawValue >> 32);
+			bufferArray[position++] = (byte)(rawValue >> 40);
+			bufferArray[position++] = (byte)(rawValue >> 48);
+			bufferArray[position++] = (byte)(rawValue >> 56);
+			buffer.move(position);
+		}
+		
+	}
+	
+	private class BigEndianBufferedOutputWriter implements ByteOrderAwareBufferedOutputWriter {
+
+		@Override
+		public void write(char value) {
+			buffer.checkCapacitiyAndHandle(JvmUtil.CHAR_SIZE);
+			int position = buffer.getIndex();
+			bufferArray[position++] = (byte)(value >> 8);
+			bufferArray[position++] = (byte)value;
+			buffer.move(position);
+		}
+
+		@Override
+		public void write(short value) {
+			buffer.checkCapacitiyAndHandle(JvmUtil.SHORT_SIZE);
+			int position = buffer.getIndex();
+			bufferArray[position++] = (byte)(value >> 8);
+			bufferArray[position++] = (byte)value;
+			buffer.move(position);
+		}
+
+		@Override
+		public void write(int value) {
+			buffer.checkCapacitiyAndHandle(JvmUtil.INT_SIZE);
+			int position = buffer.getIndex();
+			bufferArray[position++] = (byte)(value >> 24);
+			bufferArray[position++] = (byte)(value >> 16);
+			bufferArray[position++] = (byte)(value >> 8);
+			bufferArray[position++] = (byte)value;
+			buffer.move(position);	
+		}
+
+		@Override
+		public void write(float value) {
+			int rawValue = Float.floatToRawIntBits(value);
+			buffer.checkCapacitiyAndHandle(JvmUtil.FLOAT_SIZE);
+			int position = buffer.getIndex();
+			bufferArray[position++] = (byte)(rawValue >> 24);
+			bufferArray[position++] = (byte)(rawValue >> 16);
+			bufferArray[position++] = (byte)(rawValue >> 8);
+			bufferArray[position++] = (byte)rawValue;
+			buffer.move(position);
+		}
+
+		@Override
+		public void write(long value) {
+			buffer.checkCapacitiyAndHandle(JvmUtil.LONG_SIZE);
+			int position = buffer.getIndex();
+			bufferArray[position++] = (byte)(value >> 56);
+			bufferArray[position++] = (byte)(value >> 48);
+			bufferArray[position++] = (byte)(value >> 40);
+			bufferArray[position++] = (byte)(value >> 32);
+			bufferArray[position++] = (byte)(value >> 24);
+			bufferArray[position++] = (byte)(value >> 16);
+			bufferArray[position++] = (byte)(value >> 8);
+			bufferArray[position++] = (byte)value;
+			buffer.move(position);
+		}
+
+		@Override
+		public void write(double value) {
+			long rawValue = Double.doubleToRawLongBits(value);
+			buffer.checkCapacitiyAndHandle(JvmUtil.DOUBLE_SIZE);
+			int position = buffer.getIndex();
+			bufferArray[position++] = (byte)(rawValue >> 56);
+			bufferArray[position++] = (byte)(rawValue >> 48);
+			bufferArray[position++] = (byte)(rawValue >> 40);
+			bufferArray[position++] = (byte)(rawValue >> 32);
+			bufferArray[position++] = (byte)(rawValue >> 24);
+			bufferArray[position++] = (byte)(rawValue >> 16);
+			bufferArray[position++] = (byte)(rawValue >> 8);
+			bufferArray[position++] = (byte)value;
+			buffer.move(position);
+		}
+		
 	}
 
 }
