@@ -16,6 +16,8 @@
 
 package tr.com.serkanozal.jiagara.serialize.field;
 
+import java.lang.reflect.Field;
+
 import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
 
 /**
@@ -23,6 +25,7 @@ import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
  */
 public interface FieldSerializer<T, O extends OutputWriter> {
 
+	void useField(Field field);
 	void serializeField(T obj, O outputWriter);
 	
 }

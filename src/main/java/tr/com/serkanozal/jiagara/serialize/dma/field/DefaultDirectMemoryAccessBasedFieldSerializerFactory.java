@@ -61,57 +61,61 @@ public class DefaultDirectMemoryAccessBasedFieldSerializerFactory implements Dir
 
 	@Override
 	public <T> DirectMemoryAccessBasedFieldSerializer<T> createFieldSerializer(Field field) {
+		DirectMemoryAccessBasedFieldSerializer<T> fieldSerializer = null;
 		Class<?> fieldClass = field.getType();
+		
+		//////////////////////////////////////////////////////////////////////////////
+		
 		if (fieldClass.equals(byte.class)) {
-			return new DmaBasedPrimitiveByteSerializer<T>(field);
+			fieldSerializer = new DmaBasedPrimitiveByteSerializer<T>(field);
 		}
 		else if (fieldClass.equals(boolean.class)) {
-			return new DmaBasedPrimitiveBooleanSerializer<T>(field);
+			fieldSerializer = new DmaBasedPrimitiveBooleanSerializer<T>(field);
 		}
 		else if (fieldClass.equals(char.class)) {
-			return new DmaBasedPrimitiveCharacterSerializer<T>(field);
+			fieldSerializer = new DmaBasedPrimitiveCharacterSerializer<T>(field);
 		}
 		else if (fieldClass.equals(short.class)) {
-			return new DmaBasedPrimitiveShortSerializer<T>(field);
+			fieldSerializer = new DmaBasedPrimitiveShortSerializer<T>(field);
 		}
 		else if (fieldClass.equals(int.class)) {
-			return new DmaBasedPrimitiveIntegerSerializer<T>(field);
+			fieldSerializer = new DmaBasedPrimitiveIntegerSerializer<T>(field);
 		}
 		else if (fieldClass.equals(float.class)) {
-			return new DmaBasedPrimitiveFloatSerializer<T>(field);
+			fieldSerializer = new DmaBasedPrimitiveFloatSerializer<T>(field);
 		}
 		else if (fieldClass.equals(long.class)) {
-			return new DmaBasedPrimitiveLongSerializer<T>(field);
+			fieldSerializer = new DmaBasedPrimitiveLongSerializer<T>(field);
 		}
 		else if (fieldClass.equals(double.class)) {
-			return new DmaBasedPrimitiveDoubleSerializer<T>(field);
+			fieldSerializer = new DmaBasedPrimitiveDoubleSerializer<T>(field);
 		}
 		
 		//////////////////////////////////////////////////////////////////////////////
 		
-		if (fieldClass.equals(Byte.class)) {
-			return new DmaBasedObjectByteSerializer<T>(field);
+		else if (fieldClass.equals(Byte.class)) {
+			fieldSerializer = new DmaBasedObjectByteSerializer<T>(field);
 		}
 		else if (fieldClass.equals(Boolean.class)) {
-			return new DmaBasedObjectBooleanSerializer<T>(field);
+			fieldSerializer = new DmaBasedObjectBooleanSerializer<T>(field);
 		}
 		else if (fieldClass.equals(Character.class)) {
-			return new DmaBasedObjectCharacterSerializer<T>(field);
+			fieldSerializer = new DmaBasedObjectCharacterSerializer<T>(field);
 		}
 		else if (fieldClass.equals(Short.class)) {
-			return new DmaBasedObjectShortSerializer<T>(field);
+			fieldSerializer = new DmaBasedObjectShortSerializer<T>(field);
 		}
 		else if (fieldClass.equals(Integer.class)) {
-			return new DmaBasedObjectIntegerSerializer<T>(field);
+			fieldSerializer = new DmaBasedObjectIntegerSerializer<T>(field);
 		}
 		else if (fieldClass.equals(Float.class)) {
-			return new DmaBasedObjectFloatSerializer<T>(field);
+			fieldSerializer = new DmaBasedObjectFloatSerializer<T>(field);
 		}
 		else if (fieldClass.equals(Long.class)) {
-			return new DmaBasedObjectLongSerializer<T>(field);
+			fieldSerializer = new DmaBasedObjectLongSerializer<T>(field);
 		}
 		else if (fieldClass.equals(Double.class)) {
-			return new DmaBasedObjectDoubleSerializer<T>(field);
+			fieldSerializer = new DmaBasedObjectDoubleSerializer<T>(field);
 		}
 		
 		//////////////////////////////////////////////////////////////////////////////
@@ -119,59 +123,69 @@ public class DefaultDirectMemoryAccessBasedFieldSerializerFactory implements Dir
 		else if (fieldClass.isArray()) {
 			Class<?> arrayType = fieldClass.getComponentType();
 			if (arrayType.equals(byte.class)) {
-				return new DmaBasedByteArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedByteArraySerializer<T>(field);
 			}
 			else if (arrayType.equals(boolean.class)) {
-				return new DmaBasedBooleanArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedBooleanArraySerializer<T>(field);
 			}
 			else if (arrayType.equals(char.class)) {
-				return new DmaBasedCharacterArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedCharacterArraySerializer<T>(field);
 			}
 			else if (arrayType.equals(short.class)) {
-				return new DmaBasedShortArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedShortArraySerializer<T>(field);
 			}
 			else if (arrayType.equals(int.class)) {
-				return new DmaBasedIntegerArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedIntegerArraySerializer<T>(field);
 			}
 			else if (arrayType.equals(float.class)) {
-				return new DmaBasedFloatArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedFloatArraySerializer<T>(field);
 			}
 			else if (arrayType.equals(long.class)) {
-				return new DmaBasedLongArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedLongArraySerializer<T>(field);
 			}
 			else if (arrayType.equals(double.class)) {
-				return new DmaBasedDoubleArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedDoubleArraySerializer<T>(field);
 			}
 			else {
-				return new DmaBasedObjectArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedObjectArraySerializer<T>(field);
 			}	
 		}
 		
 		//////////////////////////////////////////////////////////////////////////////
 		else if (fieldClass.isEnum()) {
-			return new DmaBasedEnumSerializer<T>(field);
+			fieldSerializer = new DmaBasedEnumSerializer<T>(field);
 		}
 		else if (fieldClass.equals(String.class)) {
-			return new DmaBasedStringSerializer<T>(field);
+			fieldSerializer = new DmaBasedStringSerializer<T>(field);
 		}
 		else if (Date.class.isAssignableFrom(fieldClass)) {
-			return new DmaBasedDateSerializer<T>(field);
+			fieldSerializer = new DmaBasedDateSerializer<T>(field);
 		}
 		else if (Collection.class.isAssignableFrom(fieldClass)) {
-			return new DmaBasedCollectionSerializer<T>(field);
+			fieldSerializer = new DmaBasedCollectionSerializer<T>(field);
 		}
 		else if (Map.class.isAssignableFrom(fieldClass)) {
-			return new DmaBasedMapSerializer<T>(field);
+			fieldSerializer = new DmaBasedMapSerializer<T>(field);
 		}
 		else if (Class.class.isAssignableFrom(fieldClass)) {
-			return new DmaBasedClassSerializer<T>(field);
+			fieldSerializer = new DmaBasedClassSerializer<T>(field);
 		}
 		
 		//////////////////////////////////////////////////////////////////////////////
 		
 		else {
-			return new DmaBasedObjectSerializer<T>(field);
+			fieldSerializer = new DmaBasedObjectSerializer<T>(field);
 		}
+		
+		//////////////////////////////////////////////////////////////////////////////
+		
+		if (fieldSerializer != null) {
+			fieldSerializer.useField(field);
+		}
+		
+		//////////////////////////////////////////////////////////////////////////////
+		
+		return fieldSerializer;
 	}
 
 }

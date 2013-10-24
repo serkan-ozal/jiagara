@@ -41,27 +41,40 @@ public abstract class AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, O
 
 	protected static final Logger logger = LogUtil.getLogger();
 	
+	protected static long codeOffsetInClassRegistry;
+	protected static Unsafe unsafe;
+	
 	protected Field field;
 	protected Class<?> fieldType;
-	protected Unsafe unsafe;
 	protected long fieldOffset;
-	protected long codeOffsetInClassRegistry;
 	protected Class<T> clazz;
-
-	public AbstractDirectMemoryAccessBasedFieldAndDataSerializer(Class<T> clazz) {
-		this.clazz = clazz;
+	
+	static {
+		init();
+	}
+	
+	private static void init() {
 		unsafe = JvmUtil.getUnsafe();
 		codeOffsetInClassRegistry =  unsafe.objectFieldOffset(ReflectionUtil.getField(ClassRegistry.class, "code")); 
+	}
+	
+	public AbstractDirectMemoryAccessBasedFieldAndDataSerializer(Class<T> clazz) {
+		this.clazz = clazz;
 	}
 	
 	public AbstractDirectMemoryAccessBasedFieldAndDataSerializer(Field field) {
-		this.field = field;
-		fieldType = field.getType();
-		unsafe = JvmUtil.getUnsafe();
-		fieldOffset = unsafe.objectFieldOffset(field);
-		codeOffsetInClassRegistry =  unsafe.objectFieldOffset(ReflectionUtil.getField(ClassRegistry.class, "code")); 
+		useField(field);
 	}
 	
+	@Override
+	public void useField(Field field) {
+		if (this.field == null) {
+			this.field = field;
+			this.fieldType = field.getType();
+			this.fieldOffset = unsafe.objectFieldOffset(field);
+		}	
+	}
+
 	public void serializeData(T obj, O outputWriter) {
 		if (obj == null) {
 			outputWriter.writeNull();

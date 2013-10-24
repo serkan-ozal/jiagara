@@ -31,4 +31,9 @@ public abstract class AbstractFieldSerializer<T, O extends OutputWriter> impleme
 		this.field = field;
 	}
 	
+	@Override
+	public void useField(Field field) {
+		this.field = field;
+	}
+	
 }
