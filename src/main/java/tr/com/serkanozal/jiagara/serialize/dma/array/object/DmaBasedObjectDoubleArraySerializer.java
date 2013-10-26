@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.serialize.dma.array;
+package tr.com.serkanozal.jiagara.serialize.dma.array.object;
 
 import java.lang.reflect.Field;
 
@@ -22,39 +22,49 @@ import tr.com.serkanozal.jiagara.serialize.dma.AbstractDirectMemoryAccessBasedFi
 import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.field.DirectMemoryAccessBasedFieldSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOutputWriter;
-import tr.com.serkanozal.jiagara.util.JvmUtil;
+import tr.com.serkanozal.jiagara.util.ReflectionUtil;
 import tr.com.serkanozal.jiagara.util.SerDeConstants;
 
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedBooleanArraySerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
+public class DmaBasedObjectDoubleArraySerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 	
-	public DmaBasedBooleanArraySerializer(Field field) {
+	protected long valueFieldOffset;
+	
+	@SuppressWarnings("restriction")
+	public DmaBasedObjectDoubleArraySerializer(Field field) {
 		super(field);
+		valueFieldOffset = unsafe.objectFieldOffset(ReflectionUtil.getField(Double.class, "value"));
 	}
 	
-	public DmaBasedBooleanArraySerializer(Class<T> clazz) {
+	@SuppressWarnings("restriction")
+	public DmaBasedObjectDoubleArraySerializer(Class<T> clazz) {
 		super(clazz);
+		valueFieldOffset = unsafe.objectFieldOffset(ReflectionUtil.getField(Double.class, "value"));
 	}
 	
+	@SuppressWarnings("restriction")
 	@Override
 	public void serializeField(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		outputWriter.writeBooleanArray(obj, fieldOffset);
+		writeArray((Double[])unsafe.getObject(obj, fieldOffset), outputWriter);
 	}
 
 	@Override
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		boolean[] array = (boolean[])obj;
+		writeArray((Double[])obj, outputWriter);
+	}
+	
+	protected void writeArray(Double[] array, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		if (array == null) {
 			outputWriter.writeNull();
 		}
 		else {
-			long address = JvmUtil.addressOf(array);
-			outputWriter.write(SerDeConstants.OBJECT_DATA);
-			outputWriter.write(array.length); 
-			outputWriter.writeBooleanArray(address);
+			outputWriter.writeVarInteger(SerDeConstants.OBJECT_DATA, array.length); 
+			for (Double o : array) {
+				outputWriter.write(o);
+			}
 		}
 	}
 

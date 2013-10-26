@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.serialize.dma.specific;
+package tr.com.serkanozal.jiagara.serialize.dma.map;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

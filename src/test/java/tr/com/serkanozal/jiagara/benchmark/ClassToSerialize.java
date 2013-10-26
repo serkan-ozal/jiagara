@@ -34,7 +34,7 @@ public class ClassToSerialize implements Serializable {
 
 	private static final Random RANDOM = new SecureRandom();
 
-	private static final int ARRAY_LENGTH = 10;
+	private static final int ARRAY_LENGTH = 50;
 	private static final int COLLECTION_LENGTH = 10;
 	private static final int MAP_LENGTH = 10;
 	

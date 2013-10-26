@@ -30,7 +30,7 @@ import tr.com.serkanozal.jiagara.util.ReflectionUtil;
 public class DmaBasedObjectByteSerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 	
-	private long valueFieldOffset;
+	protected long valueFieldOffset;
 	
 	@SuppressWarnings("restriction")
 	public DmaBasedObjectByteSerializer(Field field) {
@@ -38,25 +38,32 @@ public class DmaBasedObjectByteSerializer<T> extends AbstractDirectMemoryAccessB
 		valueFieldOffset = unsafe.objectFieldOffset(ReflectionUtil.getField(Byte.class, "value"));
 	}
 	
+	@SuppressWarnings("restriction")
 	public DmaBasedObjectByteSerializer(Class<T> clazz) {
 		super(clazz);
+		valueFieldOffset = unsafe.objectFieldOffset(ReflectionUtil.getField(Byte.class, "value"));
 	}
 
 	@SuppressWarnings("restriction")
 	@Override
 	public void serializeField(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		Byte byteField = unsafe.getByte(obj, fieldOffset);
+		Byte byteField = (Byte)unsafe.getObject(obj, fieldOffset);
 		if (byteField == null) {
 			outputWriter.writeNull();
 		}
 		else {
-			outputWriter.writeByte(byteField, valueFieldOffset);
+			outputWriter.write(byteField);
 		}	
 	}
 
 	@Override
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		outputWriter.writeByte((Byte)obj, valueFieldOffset);
+		if (obj == null) {
+			outputWriter.writeNull();
+		}
+		else {
+			outputWriter.write((Byte)obj);
+		}	
 	}
 
 }

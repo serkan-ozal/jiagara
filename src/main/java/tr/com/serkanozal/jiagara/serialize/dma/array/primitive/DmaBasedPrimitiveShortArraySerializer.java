@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.serialize.dma.array;
+package tr.com.serkanozal.jiagara.serialize.dma.array.primitive;
 
 import java.lang.reflect.Field;
 
@@ -28,25 +28,25 @@ import tr.com.serkanozal.jiagara.util.SerDeConstants;
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedFloatArraySerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter>  
+public class DmaBasedPrimitiveShortArraySerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 	
-	public DmaBasedFloatArraySerializer(Field field) {
+	public DmaBasedPrimitiveShortArraySerializer(Field field) {
 		super(field);
 	}
 	
-	public DmaBasedFloatArraySerializer(Class<T> clazz) {
+	public DmaBasedPrimitiveShortArraySerializer(Class<T> clazz) {
 		super(clazz);
 	}
 	
 	@Override
 	public void serializeField(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		outputWriter.writeFloatArray(obj, fieldOffset);
+		outputWriter.writeShortArray(obj, fieldOffset);
 	}
 
 	@Override
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		float[] array = (float[])obj;
+		short[] array = (short[])obj;
 		if (array == null) {
 			outputWriter.writeNull();
 		}
@@ -54,7 +54,7 @@ public class DmaBasedFloatArraySerializer<T> extends AbstractDirectMemoryAccessB
 			long address = JvmUtil.addressOf(array);
 			outputWriter.write(SerDeConstants.OBJECT_DATA);
 			outputWriter.write(array.length); 
-			outputWriter.writeFloatArray(address);
+			outputWriter.writeShortArray(address);
 		}
 	}
 

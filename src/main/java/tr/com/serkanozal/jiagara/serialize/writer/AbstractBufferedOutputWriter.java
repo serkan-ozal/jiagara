@@ -138,8 +138,6 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 			write(SerDeConstants.STRING_DATA_WITHOUT_OPTIMIZATION);
 			int length = value.length();
 			int size = length * JvmUtil.CHAR_SIZE;
-			int totalSize = size + JvmUtil.INT_SIZE;
-			buffer.checkCapacitiyAndHandle(totalSize);
 			writeVarInteger(SerDeConstants.STRING_DATA_WITHOUT_OPTIMIZATION, size);
 			for (int i = 0; i < length; i++) {
 				write(value.charAt(i));
@@ -156,8 +154,6 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 			write(SerDeConstants.STRING_DATA_WITH_OPTIMIZATION);
 			int length = value.length();
 			int size = length * JvmUtil.BYTE_SIZE;
-			int totalSize = size + JvmUtil.INT_SIZE;
-			buffer.checkCapacitiyAndHandle(totalSize);
 			writeVarInteger(SerDeConstants.STRING_DATA_WITH_OPTIMIZATION, size);
 			for (int i = 0; i < length; i++) {
 				write((byte)value.charAt(i));
@@ -270,7 +266,6 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
 		else {
-			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.BYTE_SIZE);
 			for (byte value : array) {
 				write(value);
 			}
@@ -283,7 +278,6 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
 		else {
-			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.BOOLEAN_SIZE);
 			for (boolean value : array) {
 				write(value);
 			}
@@ -296,7 +290,6 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
 		else {
-			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.CHAR_SIZE);
 			for (char value : array) {
 				write(value);
 			}
@@ -309,7 +302,6 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
 		else {
-			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.SHORT_SIZE);
 			for (short value : array) {
 				write(value);
 			}
@@ -322,7 +314,6 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
 		else {
-			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.INT_SIZE);
 			for (int value : array) {
 				write(value);
 			}
@@ -335,7 +326,6 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
 		else {
-			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.FLOAT_SIZE);
 			for (float value : array) {
 				write(value);
 			}
@@ -348,7 +338,6 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
 		else {
-			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.LONG_SIZE);
 			for (long value : array) {
 				write(value);
 			}
@@ -361,7 +350,6 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 			write(SerDeConstants.NULL_ARRAY_LENGTH);
 		}
 		else {
-			buffer.checkCapacitiyAndHandle(array.length * JvmUtil.DOUBLE_SIZE);
 			for (double value : array) {
 				write(value);
 			}

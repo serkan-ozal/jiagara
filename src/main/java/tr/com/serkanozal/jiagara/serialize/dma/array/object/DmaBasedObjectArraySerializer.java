@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.serialize.dma.array;
+package tr.com.serkanozal.jiagara.serialize.dma.array.object;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -33,6 +33,8 @@ import tr.com.serkanozal.jiagara.util.SerDeConstants;
  */
 public class DmaBasedObjectArraySerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
+	
+	private static boolean OPTIMIZATION_ENABLED = true;
 	
 	private SerializerService serializerService = SerializerServiceFactory.getSerializerService();
 	private ObjectElementSerializer objectElementSerializer;
@@ -111,18 +113,45 @@ public class DmaBasedObjectArraySerializer<T> extends AbstractDirectMemoryAccess
 		public void serialize(Object[] array, DirectMemoryAccessBasedOutputWriter outputWriter) {
 			Class<?> arrayComponentType = array.getClass().getComponentType();
 			boolean allElementsAreSameTypeWithArray = true;
-			for (Object o : array) {
-				if (o != null && o.getClass().equals(arrayComponentType) == false) {
-					allElementsAreSameTypeWithArray = false;
+			if (OPTIMIZATION_ENABLED) {
+				if (arrayComponentType.equals(Object.class) == false) { 
+					for (Object o : array) {
+						if (o != null && o.getClass().equals(arrayComponentType) == false) {
+							allElementsAreSameTypeWithArray = false;
+						}
+					}	
+				}	
+				else {
+					arrayComponentType = null;
+					for (Object o : array) {
+						if (o != null) {
+							if (arrayComponentType == null) {
+								arrayComponentType = o.getClass();
+								break;
+							}
+						}
+					}
+					if (arrayComponentType != null) {
+						for (Object o : array) {
+							if (o != null && o.getClass().equals(arrayComponentType) == false) {
+								allElementsAreSameTypeWithArray = false;
+							}
+						}	
+					}	 
 				}
-			}	
+			}
+			else {
+				allElementsAreSameTypeWithArray = false;
+			}
 			if (allElementsAreSameTypeWithArray) {
+				serializer = serializerService.getSerializer(arrayComponentType);
 				outputWriter.writeVarInteger(SerDeConstants.ARRAY_DATA_WITHOUT_TYPE, array.length); 
 				for (Object o : array) {
 					serializer.serializeContent(o, outputWriter);
 				}
 			}
 			else {
+				serializer = serializerService.getSerializer(arrayComponentType);
 				outputWriter.writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
 				for (Object o : array) {
 					if (o.getClass().equals(arrayComponentType)) {

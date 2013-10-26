@@ -44,13 +44,7 @@ public class DmaBasedEnumSerializer<T> extends AbstractDirectMemoryAccessBasedFi
 
 	@Override
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		Enum<?> o = (Enum<?>)obj;
-		if (o == null) {
-			outputWriter.writeNull();
-		}
-		else {
-			outputWriter.write(o);
-		}
+		outputWriter.write((Enum<?>)obj);
 	}
 
 }

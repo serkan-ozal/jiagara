@@ -30,7 +30,7 @@ import tr.com.serkanozal.jiagara.util.ReflectionUtil;
 public class DmaBasedObjectBooleanSerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 	
-	private long valueFieldOffset;
+	protected long valueFieldOffset;
 	
 	@SuppressWarnings("restriction")
 	public DmaBasedObjectBooleanSerializer(Field field) {
@@ -38,25 +38,32 @@ public class DmaBasedObjectBooleanSerializer<T> extends AbstractDirectMemoryAcce
 		valueFieldOffset = unsafe.objectFieldOffset(ReflectionUtil.getField(Boolean.class, "value"));
 	}
 	
+	@SuppressWarnings("restriction")
 	public DmaBasedObjectBooleanSerializer(Class<T> clazz) {
 		super(clazz);
+		valueFieldOffset = unsafe.objectFieldOffset(ReflectionUtil.getField(Boolean.class, "value"));
 	}
 
 	@SuppressWarnings("restriction")
 	@Override
 	public void serializeField(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		Boolean booleanField = unsafe.getBoolean(obj, fieldOffset);
+		Boolean booleanField = (Boolean)unsafe.getObject(obj, fieldOffset);
 		if (booleanField == null) {
 			outputWriter.writeNull();
 		}
 		else {
-			outputWriter.writeBoolean(booleanField, valueFieldOffset);
+			outputWriter.write(booleanField);
 		}	
 	}
 
 	@Override
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		outputWriter.writeBoolean((Boolean)obj, valueFieldOffset);
+		if (obj == null) {
+			outputWriter.writeNull();
+		}
+		else {
+			outputWriter.write((Boolean)obj);
+		}	
 	}
 
 }

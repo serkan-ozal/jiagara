@@ -52,7 +52,7 @@ public class SerializationBenchmarkTest implements Serializable {
 	private static final int ROUND_COUNT = 10;
 	private static final boolean WARM_UP = true;
 	
-	@Test
+	//@Test
 	public void runSerializationBenchmarkTestDrivers() {
 		try {
 			JvmUtil.info();
@@ -84,17 +84,20 @@ public class SerializationBenchmarkTest implements Serializable {
 	
 					System.gc();
 					
-					Object objArray[] = new Object[SERIALIZATION_COUNT];
-					for (int i = 0; i < SERIALIZATION_COUNT; i++) {
+					Object objArray[] = new Object[PRE_SERIALIZATION_COUNT];
+					for (int i = 0; i < PRE_SERIALIZATION_COUNT; i++) {
 						objArray[i] = driver.getObjectToSerialize();
 					}
 	
 					System.out.println("Warmup " + driver.getName() + " ...");
 					bos = new ByteArrayOutputStream();
 					start = System.nanoTime();
-					for (int i = 0; i < SERIALIZATION_COUNT; i++) {
+					/*
+					for (int i = 0; i < PRE_SERIALIZATION_COUNT; i++) {
 						driver.serialize(objArray[i], bos);
 					}
+					*/
+					driver.serialize(objArray, bos);
 					finish = System.nanoTime();
 					System.out.println("Warmup for " + driver.getName() + " executed " + PRE_SERIALIZATION_COUNT + 
 							           " times in " + TimeUnit.NANOSECONDS.toMillis(finish - start) + " milliseconds ...");
@@ -173,7 +176,7 @@ public class SerializationBenchmarkTest implements Serializable {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void runSerializationBenchmarkTestDriversAsSeperateProcesses() {
 		runSerializationBenchmarkTestDriversInSeperateProcess();
 	}	
@@ -262,6 +265,29 @@ public class SerializationBenchmarkTest implements Serializable {
 	private static long runSerializationBenchmarkTestDriver(Class<? extends SerializationBenchmarkTestDriver> testDriverClass) {
 		try {
 			SerializationBenchmarkTestDriver driver = testDriverClass.newInstance();
+			
+			if (WARM_UP) {
+				ByteArrayOutputStream bos;
+				long start, finish;
+				System.out.println("Warmup " + driver.getName() + " ...");
+				
+				Object objArray[] = new Object[SERIALIZATION_COUNT];
+				for (int i = 0; i < SERIALIZATION_COUNT; i++) {
+					objArray[i] = driver.getObjectToSerialize();
+				}
+				bos = new ByteArrayOutputStream();
+				start = System.nanoTime();
+				/*
+				for (int i = 0; i < PRE_SERIALIZATION_COUNT; i++) {
+					driver.serialize(objArray[i], bos);
+				}
+				*/
+				driver.serialize(objArray, bos);
+				finish = System.nanoTime();
+				System.out.println("Warmup for " + driver.getName() + " executed " + PRE_SERIALIZATION_COUNT + 
+							       " times in " + TimeUnit.NANOSECONDS.toMillis(finish - start) + " milliseconds ...");
+			}
+			
 			long[] results = new long[ROUND_COUNT];
 			
 			for (int run = 0; run < results.length; run++) {
@@ -276,30 +302,20 @@ public class SerializationBenchmarkTest implements Serializable {
 				Thread.sleep(2000);
 	
 				System.gc();
-	
-				System.out.println("Warmup " + driver.getName() + " ...");
-				bos = new ByteArrayOutputStream();
-				start = System.nanoTime();
-				for (int i = 0; i < PRE_SERIALIZATION_COUNT; i++) {
-					driver.serialize(driver.getObjectToSerialize(), bos);
-				}
-				finish = System.nanoTime();
-				System.out.println("Warmup for " + driver.getName() + " executed " + PRE_SERIALIZATION_COUNT + 
-							       " times in " + TimeUnit.NANOSECONDS.toMillis(finish - start) + " milliseconds ...");
-	
-				System.gc();
-				System.gc();
-				System.gc();
-					
-				Thread.sleep(2000);
-					
-				System.gc();
-					
-				bos = new ByteArrayOutputStream();
-				start = System.nanoTime();
+				
+				Object objArray[] = new Object[SERIALIZATION_COUNT];
 				for (int i = 0; i < SERIALIZATION_COUNT; i++) {
-					driver.serialize(driver.getObjectToSerialize(), bos);
+					objArray[i] = driver.getObjectToSerialize();
 				}
+				
+				bos = new ByteArrayOutputStream();
+				start = System.nanoTime();
+				/*
+				for (int i = 0; i < SERIALIZATION_COUNT; i++) {
+					driver.serialize(objArray[i], bos);
+				}
+				*/
+				driver.serialize(objArray, bos);
 				driver.release(bos);
 				finish = System.nanoTime();
 					

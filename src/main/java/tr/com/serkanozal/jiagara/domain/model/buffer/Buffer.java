@@ -17,17 +17,20 @@
 package tr.com.serkanozal.jiagara.domain.model.buffer;
 
 import tr.com.serkanozal.jiagara.util.AssertUtil;
+import tr.com.serkanozal.jiagara.util.JvmUtil;
 
 /**
  * @author Serkan ÖZAL
  */
 public class Buffer {
 
-	public static final int DEFAULT_BUFFER_SIZE = 4096;
+	@SuppressWarnings("restriction")
+	public static final int DEFAULT_BUFFER_SIZE = JvmUtil.getUnsafe().pageSize() * 1024;
 	
 	protected byte[] buffer;
 	protected int length;
 	protected int index;
+	protected int lastIndex;
 	protected BufferListener bufferListener;
 	
 	public Buffer(BufferListener bufferListener) {
@@ -35,6 +38,7 @@ public class Buffer {
 		this.index = 0;
 		this.bufferListener = bufferListener;
 		this.length = this.buffer.length;
+		this.lastIndex = this.length - 1;
 	}
 	
 	public Buffer(int size, BufferListener bufferListener) {
@@ -43,6 +47,7 @@ public class Buffer {
 		this.index = 0;
 		this.bufferListener = bufferListener;
 		this.length = this.buffer.length;
+		this.lastIndex = this.length - 1;
 	}
 	
 	public Buffer(byte[] buffer, BufferListener bufferListener) {
@@ -51,6 +56,7 @@ public class Buffer {
 		this.index = 0;
 		this.bufferListener = bufferListener;
 		this.length = this.buffer.length;
+		this.lastIndex = this.length - 1;
 	}
 	
 	public byte[] getBufferArray() {
@@ -116,7 +122,7 @@ public class Buffer {
 	}
 	
 	public void checkCapacitiyAndHandle(int size) {
-		if (index + size >= length) {
+		if (index + size >= lastIndex) {
 			if (bufferListener != null) {
 				bufferListener.onEndOfBuffer();
 			}
@@ -128,7 +134,7 @@ public class Buffer {
 	}
 	
 	public void checkCapacitiyAndHandle(long size) {
-		if (index + size >= length) {
+		if (index + size >= lastIndex) {
 			if (bufferListener != null) {
 				bufferListener.onEndOfBuffer();
 			}

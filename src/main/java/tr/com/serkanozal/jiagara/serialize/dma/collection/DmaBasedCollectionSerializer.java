@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.serialize.dma.specific;
+package tr.com.serkanozal.jiagara.serialize.dma.collection;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -37,6 +37,8 @@ import tr.com.serkanozal.jiagara.util.SerDeConstants;
 public class DmaBasedCollectionSerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 		
+	private static boolean OPTIMIZATION_ENABLED = true;
+	
 	private SerializerService serializerService = SerializerServiceFactory.getSerializerService();
 	private CollectionElementSerializer collectionElementSerializer;
 	private Class<?> collectionTypeClass = Object.class;
@@ -115,11 +117,17 @@ public class DmaBasedCollectionSerializer<T> extends AbstractDirectMemoryAccessB
 		@Override
 		public void serialize(Collection<?> collection, DirectMemoryAccessBasedOutputWriter outputWriter) {
 			boolean allElementsAreSameTypeWithCollection = true;
-			for (Object collectionObj : collection) {
-				if (collectionObj != null && collectionObj.getClass().equals(collectionTypeClass) == false) {
-					allElementsAreSameTypeWithCollection = false;
+			if (OPTIMIZATION_ENABLED) {
+				for (Object collectionObj : collection) {
+					if (collectionObj != null && collectionObj.getClass().equals(collectionTypeClass) == false) {
+						allElementsAreSameTypeWithCollection = false;
+					}
 				}
 			}
+			else {
+				allElementsAreSameTypeWithCollection = false;
+			}
+			
 			if (allElementsAreSameTypeWithCollection) {
 				outputWriter.writeVarInteger(SerDeConstants.COLLECTION_WITH_TYPE, collection.size()); 
 				for (Object collectionObj : collection) {

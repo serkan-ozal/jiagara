@@ -14,56 +14,60 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.serialize.dma.object;
+package tr.com.serkanozal.jiagara.serialize.dma.array.object;
 
 import java.lang.reflect.Field;
 
 import tr.com.serkanozal.jiagara.serialize.dma.AbstractDirectMemoryAccessBasedFieldAndDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.field.DirectMemoryAccessBasedFieldSerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedStringSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOutputWriter;
-import tr.com.serkanozal.jiagara.util.ReflectionUtil;
+import tr.com.serkanozal.jiagara.util.SerDeConstants;
 
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedObjectDoubleSerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
+public class DmaBasedStringArraySerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 	
-	protected long valueFieldOffset;
+	@SuppressWarnings("rawtypes")
+	protected DmaBasedStringSerializer dmaBasedStringSerializer;
 	
-	@SuppressWarnings("restriction")
-	public DmaBasedObjectDoubleSerializer(Field field) {
+	@SuppressWarnings("rawtypes")
+	public DmaBasedStringArraySerializer(Field field) {
 		super(field);
-		valueFieldOffset = unsafe.objectFieldOffset(ReflectionUtil.getField(Double.class, "value"));
+		dmaBasedStringSerializer = new DmaBasedStringSerializer(field);
 	}
 	
-	@SuppressWarnings("restriction")
-	public DmaBasedObjectDoubleSerializer(Class<T> clazz) {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public DmaBasedStringArraySerializer(Class<T> clazz) {
 		super(clazz);
-		valueFieldOffset = unsafe.objectFieldOffset(ReflectionUtil.getField(Double.class, "value"));
+		dmaBasedStringSerializer = new DmaBasedStringSerializer(String.class);
 	}
-
+	
 	@SuppressWarnings("restriction")
 	@Override
 	public void serializeField(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		Double doubleField = (Double)unsafe.getObject(obj, fieldOffset);
-		if (doubleField == null) {
-			outputWriter.writeNull();
-		}
-		else {
-			outputWriter.write(doubleField);
-		}	
+		writeArray((String[])unsafe.getObject(obj, fieldOffset), outputWriter);
 	}
 
 	@Override
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		if (obj == null) {
+		writeArray((String[])obj, outputWriter);
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected void writeArray(String[] array, DirectMemoryAccessBasedOutputWriter outputWriter) {
+		if (array == null) {
 			outputWriter.writeNull();
 		}
 		else {
-			outputWriter.write((Double)obj);
-		}	
+			outputWriter.writeVarInteger(SerDeConstants.OBJECT_DATA, array.length); 
+			for (String o : array) {
+				dmaBasedStringSerializer.serializeDataContent(o, outputWriter);
+			}
+		}
 	}
-
+	
 }

@@ -20,6 +20,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Map.Entry;
 
 /**
  * @author Serkan ÖZAL
@@ -38,6 +39,9 @@ public class ExternalizableClassToSerialize extends ClassToSerialize implements 
 		out.writeDouble(doubleValue);
 		out.writeBytes(stringValue);
 		out.writeInt(enumValue.ordinal());
+		
+		///////////////////////////////////////////////////////////////////////
+		
 		out.writeInt(byteArrayValue.length);
 		for (byte b : byteArrayValue) {
 			out.writeByte(b);
@@ -69,6 +73,153 @@ public class ExternalizableClassToSerialize extends ClassToSerialize implements 
 		out.writeInt(doubleArrayValue.length);
 		for (double d : doubleArrayValue) {
 			out.writeDouble(d);
+		}
+		
+		///////////////////////////////////////////////////////////////////////
+		
+		out.writeInt(byteObjectArrayValue.length);
+		for (byte b : byteObjectArrayValue) {
+			out.writeByte(b);
+		}
+		out.writeInt(booleanObjectArrayValue.length);
+		for (boolean b : booleanObjectArrayValue) {
+			out.writeBoolean(b);
+		}
+		out.writeInt(charObjectArrayValue.length);
+		for (char c : charObjectArrayValue) {
+			out.writeChar(c);
+		}
+		out.writeInt(shortObjectArrayValue.length);
+		for (short s : shortObjectArrayValue) {
+			out.writeShort(s);
+		}
+		out.writeInt(intObjectArrayValue.length);
+		for (int i : intObjectArrayValue) {
+			out.writeInt(i);
+		}
+		out.writeInt(floatObjectArrayValue.length);
+		for (float f : floatObjectArrayValue) {
+			out.writeFloat(f);
+		}
+		out.writeInt(longObjectArrayValue.length);
+		for (long l : longObjectArrayValue) {
+			out.writeLong(l);
+		}
+		out.writeInt(doubleObjectArrayValue.length);
+		for (double d : doubleObjectArrayValue) {
+			out.writeDouble(d);
+		}
+		
+		///////////////////////////////////////////////////////////////////////
+		
+		out.writeBytes(stringValue);
+		out.writeLong(dateValue.getTime());
+		out.writeInt(enumValue.ordinal());
+		aggregatedClassValue.serialize(out);
+		
+		///////////////////////////////////////////////////////////////////////
+	
+		out.writeInt(byteValueCollection.size());
+		for (byte b : byteValueCollection) {
+			out.writeByte(b);
+		}
+		out.writeInt(booleanValueCollection.size());
+		for (boolean b : booleanValueCollection) {
+			out.writeBoolean(b);
+		}
+		out.writeInt(charValueCollection.size());
+		for (char c : charValueCollection) {
+			out.writeChar(c);
+		}
+		out.writeInt(shortValueCollection.size());
+		for (short s : shortValueCollection) {
+			out.writeShort(s);
+		}
+		out.writeInt(intValueCollection.size());
+		for (int i : intValueCollection) {
+			out.writeInt(i);
+		}
+		out.writeInt(floatValueCollection.size());
+		for (float f : floatValueCollection) {
+			out.writeFloat(f);
+		}
+		out.writeInt(longValueCollection.size());
+		for (long l : longValueCollection) {
+			out.writeLong(l);
+		}
+		out.writeInt(doubleValueCollection.size());
+		for (double d : doubleValueCollection) {
+			out.writeDouble(d);
+		}
+		out.writeInt(stringValueCollection.size());
+		for (String str : stringValueCollection) {
+			out.writeBytes(str);
+		}
+		out.writeInt(enumValueCollection.size());
+		for (EnumToSerialize e : enumValueCollection) {
+			out.writeInt(e.ordinal());
+		}
+		out.writeInt(aggregatedClassValueCollection.size());
+		for (AggregatedClassToSerialize a : aggregatedClassValueCollection) {
+			a.serialize(out);
+		}
+		
+		///////////////////////////////////////////////////////////////////////
+		
+		out.writeInt(byteValueMap.size());
+		for (Entry<String, Byte> ent : byteValueMap.entrySet()) {
+			out.writeBytes(ent.getKey());
+			out.writeByte(ent.getValue());
+		}
+		out.writeInt(booleanValueMap.size());
+		for (Entry<String, Boolean> ent : booleanValueMap.entrySet()) {
+			out.writeBytes(ent.getKey());
+			out.writeBoolean(ent.getValue());
+		}
+		out.writeInt(charValueMap.size());
+		for (Entry<String, Character> ent : charValueMap.entrySet()) {
+			out.writeBytes(ent.getKey());
+			out.writeChar(ent.getValue());
+		}
+		out.writeInt(shortValueMap.size());
+		for (Entry<String, Short> ent : shortValueMap.entrySet()) {
+			out.writeBytes(ent.getKey());
+			out.writeShort(ent.getValue());
+		}
+		out.writeInt(intValueMap.size());
+		for (Entry<String, Integer> ent : intValueMap.entrySet()) {
+			out.writeBytes(ent.getKey());
+			out.writeInt(ent.getValue());
+		}
+		out.writeInt(floatValueMap.size());
+		for (Entry<String, Float> ent : floatValueMap.entrySet()) {
+			out.writeBytes(ent.getKey());
+			out.writeFloat(ent.getValue());
+		}
+		out.writeInt(longValueMap.size());
+		for (Entry<String, Long> ent : longValueMap.entrySet()) {
+			out.writeBytes(ent.getKey());
+			out.writeLong(ent.getValue());
+		}
+		out.writeInt(doubleValueMap.size());
+		for (Entry<String, Double> ent : doubleValueMap.entrySet()) {
+			out.writeBytes(ent.getKey());
+			out.writeDouble(ent.getValue());
+		}
+		out.writeInt(stringValueMap.size());
+		for (Entry<String, String> ent : stringValueMap.entrySet()) {
+			out.writeBytes(ent.getKey());
+			out.writeBytes(ent.getValue());
+		}
+		out.writeInt(enumValueMap.size());
+		for (Entry<String, EnumToSerialize> ent : enumValueMap.entrySet()) {
+			out.writeBytes(ent.getKey());
+			out.writeInt(ent.getValue().ordinal());
+		}
+		out.writeInt(aggregatedClassValueMap.size());
+		for (Entry<String, AggregatedClassToSerialize> ent : aggregatedClassValueMap.entrySet()) {
+			out.writeBytes(ent.getKey());
+			ent.getValue().serialize(out);
 		}
 	}
 	@Override

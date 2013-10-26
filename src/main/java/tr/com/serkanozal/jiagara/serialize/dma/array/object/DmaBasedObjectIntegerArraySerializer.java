@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.serialize.dma.object;
+package tr.com.serkanozal.jiagara.serialize.dma.array.object;
 
 import java.lang.reflect.Field;
 
@@ -23,47 +23,49 @@ import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDataS
 import tr.com.serkanozal.jiagara.serialize.dma.field.DirectMemoryAccessBasedFieldSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOutputWriter;
 import tr.com.serkanozal.jiagara.util.ReflectionUtil;
+import tr.com.serkanozal.jiagara.util.SerDeConstants;
 
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedObjectDoubleSerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
+public class DmaBasedObjectIntegerArraySerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 	
 	protected long valueFieldOffset;
 	
 	@SuppressWarnings("restriction")
-	public DmaBasedObjectDoubleSerializer(Field field) {
+	public DmaBasedObjectIntegerArraySerializer(Field field) {
 		super(field);
-		valueFieldOffset = unsafe.objectFieldOffset(ReflectionUtil.getField(Double.class, "value"));
+		valueFieldOffset = unsafe.objectFieldOffset(ReflectionUtil.getField(Integer.class, "value"));
 	}
 	
 	@SuppressWarnings("restriction")
-	public DmaBasedObjectDoubleSerializer(Class<T> clazz) {
+	public DmaBasedObjectIntegerArraySerializer(Class<T> clazz) {
 		super(clazz);
-		valueFieldOffset = unsafe.objectFieldOffset(ReflectionUtil.getField(Double.class, "value"));
+		valueFieldOffset = unsafe.objectFieldOffset(ReflectionUtil.getField(Integer.class, "value"));
 	}
-
+	
 	@SuppressWarnings("restriction")
 	@Override
 	public void serializeField(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		Double doubleField = (Double)unsafe.getObject(obj, fieldOffset);
-		if (doubleField == null) {
-			outputWriter.writeNull();
-		}
-		else {
-			outputWriter.write(doubleField);
-		}	
+		writeArray((Integer[])unsafe.getObject(obj, fieldOffset), outputWriter);
 	}
 
 	@Override
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
-		if (obj == null) {
+		writeArray((Integer[])obj, outputWriter);
+	}
+	
+	protected void writeArray(Integer[] array, DirectMemoryAccessBasedOutputWriter outputWriter) {
+		if (array == null) {
 			outputWriter.writeNull();
 		}
 		else {
-			outputWriter.write((Double)obj);
-		}	
+			outputWriter.writeVarInteger(SerDeConstants.OBJECT_DATA, array.length);  
+			for (Integer o : array) {
+				outputWriter.write(o);
+			}
+		}
 	}
 
 }

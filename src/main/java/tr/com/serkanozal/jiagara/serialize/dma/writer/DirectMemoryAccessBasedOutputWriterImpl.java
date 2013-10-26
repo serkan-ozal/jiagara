@@ -210,9 +210,7 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	@Override
 	public void write(String value) {
 		if (value == null) {
-			buffer.checkCapacitiyAndHandle(JvmUtil.INT_SIZE);
 			write(SerDeConstants.NULL_STRING_LENGTH);
-			buffer.forward(JvmUtil.INT_SIZE);
 		}
 		else {
 			int length = value.length();
@@ -463,9 +461,7 @@ public class DirectMemoryAccessBasedOutputWriterImpl extends AbstractBufferedOut
 	@Override
 	public void writeString(long address) {
 		if (address == 0) { // Null object
-			buffer.checkCapacitiyAndHandle(JvmUtil.INT_SIZE);
 			write(SerDeConstants.NULL_STRING_LENGTH);
-			buffer.forward(JvmUtil.INT_SIZE);
 		}
 		else {
 			write(SerDeConstants.STRING_DATA_WITHOUT_OPTIMIZATION);

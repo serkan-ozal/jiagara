@@ -16,6 +16,8 @@
 
 package tr.com.serkanozal.jiagara.benchmark;
 
+import java.io.IOException;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.Random;
@@ -54,6 +56,24 @@ public class AggregatedClassToSerialize implements Serializable {
 		enumValue = EnumToSerialize.random();
 		
 		return (T) this;
+	}
+	
+	public void serialize(ObjectOutput out) throws IOException {
+		out.writeByte(byteValue);
+		out.writeBoolean(booleanValue);
+		out.writeChar(charValue);
+		out.writeShort(shortValue);
+		out.writeInt(intValue);
+		out.writeFloat(floatValue);
+		out.writeLong(longValue);
+		out.writeDouble(doubleValue);
+		out.writeBytes(stringValue);
+		out.writeInt(enumValue.ordinal());
+	
+		///////////////////////////////////////////////////////////////////////
+		
+		out.writeBytes(stringValue);
+		out.writeInt(enumValue.ordinal());
 	}
 	
 }

@@ -21,15 +21,26 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
-import tr.com.serkanozal.jiagara.serialize.dma.array.DmaBasedBooleanArraySerializer;
-import tr.com.serkanozal.jiagara.serialize.dma.array.DmaBasedByteArraySerializer;
-import tr.com.serkanozal.jiagara.serialize.dma.array.DmaBasedCharacterArraySerializer;
-import tr.com.serkanozal.jiagara.serialize.dma.array.DmaBasedDoubleArraySerializer;
-import tr.com.serkanozal.jiagara.serialize.dma.array.DmaBasedFloatArraySerializer;
-import tr.com.serkanozal.jiagara.serialize.dma.array.DmaBasedIntegerArraySerializer;
-import tr.com.serkanozal.jiagara.serialize.dma.array.DmaBasedLongArraySerializer;
-import tr.com.serkanozal.jiagara.serialize.dma.array.DmaBasedObjectArraySerializer;
-import tr.com.serkanozal.jiagara.serialize.dma.array.DmaBasedShortArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.object.DmaBasedObjectArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.object.DmaBasedObjectBooleanArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.object.DmaBasedObjectByteArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.object.DmaBasedObjectCharacterArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.object.DmaBasedObjectDoubleArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.object.DmaBasedObjectFloatArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.object.DmaBasedObjectIntegerArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.object.DmaBasedObjectLongArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.object.DmaBasedObjectShortArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.object.DmaBasedStringArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.primitive.DmaBasedPrimitiveBooleanArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.primitive.DmaBasedPrimitiveByteArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.primitive.DmaBasedPrimitiveCharacterArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.primitive.DmaBasedPrimitiveDoubleArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.primitive.DmaBasedPrimitiveFloatArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.primitive.DmaBasedPrimitiveIntegerArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.primitive.DmaBasedPrimitiveLongArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.array.primitive.DmaBasedPrimitiveShortArraySerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.collection.DmaBasedCollectionSerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.map.DmaBasedMapSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.object.DmaBasedObjectBooleanSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.object.DmaBasedObjectByteSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.object.DmaBasedObjectCharacterSerializer;
@@ -48,10 +59,8 @@ import tr.com.serkanozal.jiagara.serialize.dma.primitive.DmaBasedPrimitiveIntege
 import tr.com.serkanozal.jiagara.serialize.dma.primitive.DmaBasedPrimitiveLongSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.primitive.DmaBasedPrimitiveShortSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedClassSerializer;
-import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedCollectionSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedDateSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedEnumSerializer;
-import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedMapSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedStringSerializer;
 
 /**
@@ -123,28 +132,55 @@ public class DefaultDirectMemoryAccessBasedFieldSerializerFactory implements Dir
 		else if (fieldClass.isArray()) {
 			Class<?> arrayType = fieldClass.getComponentType();
 			if (arrayType.equals(byte.class)) {
-				fieldSerializer = new DmaBasedByteArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedPrimitiveByteArraySerializer<T>(field);
 			}
 			else if (arrayType.equals(boolean.class)) {
-				fieldSerializer = new DmaBasedBooleanArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedPrimitiveBooleanArraySerializer<T>(field);
 			}
 			else if (arrayType.equals(char.class)) {
-				fieldSerializer = new DmaBasedCharacterArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedPrimitiveCharacterArraySerializer<T>(field);
 			}
 			else if (arrayType.equals(short.class)) {
-				fieldSerializer = new DmaBasedShortArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedPrimitiveShortArraySerializer<T>(field);
 			}
 			else if (arrayType.equals(int.class)) {
-				fieldSerializer = new DmaBasedIntegerArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedPrimitiveIntegerArraySerializer<T>(field);
 			}
 			else if (arrayType.equals(float.class)) {
-				fieldSerializer = new DmaBasedFloatArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedPrimitiveFloatArraySerializer<T>(field);
 			}
 			else if (arrayType.equals(long.class)) {
-				fieldSerializer = new DmaBasedLongArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedPrimitiveLongArraySerializer<T>(field);
 			}
 			else if (arrayType.equals(double.class)) {
-				fieldSerializer = new DmaBasedDoubleArraySerializer<T>(field);
+				fieldSerializer = new DmaBasedPrimitiveDoubleArraySerializer<T>(field);
+			}
+			else if (arrayType.equals(Byte.class)) {
+				fieldSerializer = new DmaBasedObjectByteArraySerializer<T>(field);
+			}
+			else if (arrayType.equals(Boolean.class)) {
+				fieldSerializer = new DmaBasedObjectBooleanArraySerializer<T>(field);
+			}
+			else if (arrayType.equals(Character.class)) {
+				fieldSerializer = new DmaBasedObjectCharacterArraySerializer<T>(field);
+			}
+			else if (arrayType.equals(Short.class)) {
+				fieldSerializer = new DmaBasedObjectShortArraySerializer<T>(field);
+			}
+			else if (arrayType.equals(Integer.class)) {
+				fieldSerializer = new DmaBasedObjectIntegerArraySerializer<T>(field);
+			}
+			else if (arrayType.equals(Float.class)) {
+				fieldSerializer = new DmaBasedObjectFloatArraySerializer<T>(field);
+			}
+			else if (arrayType.equals(Long.class)) {
+				fieldSerializer = new DmaBasedObjectLongArraySerializer<T>(field);
+			}
+			else if (arrayType.equals(Double.class)) {
+				fieldSerializer = new DmaBasedObjectDoubleArraySerializer<T>(field);
+			}
+			else if (arrayType.equals(String.class)) {
+				fieldSerializer = new DmaBasedStringArraySerializer<T>(field);
 			}
 			else {
 				fieldSerializer = new DmaBasedObjectArraySerializer<T>(field);
