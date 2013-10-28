@@ -48,13 +48,11 @@ public class DmaBasedPrimitiveFloatArraySerializer<T> extends AbstractDirectMemo
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		float[] array = (float[])obj;
 		if (array == null) {
-			outputWriter.writeNull();
+			outputWriter.write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
-			long address = JvmUtil.addressOf(array);
-			outputWriter.write(SerDeConstants.OBJECT_DATA);
-			outputWriter.write(array.length); 
-			outputWriter.writeFloatArray(address);
+			outputWriter.writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
+			outputWriter.writeBooleanArray(JvmUtil.addressOf(array));
 		}
 	}
 

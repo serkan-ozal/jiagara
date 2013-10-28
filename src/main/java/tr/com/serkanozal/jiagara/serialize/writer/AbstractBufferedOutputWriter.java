@@ -36,6 +36,8 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	protected B buffer;
 	protected byte[] bufferArray;
 	protected ByteOrderAwareBufferedOutputWriter byteOrderAwareBufferedOutputWriter;
+	protected int referenceSize = JvmUtil.getReferenceSize();
+	protected int flushedIndex = 0;
 	
 	public AbstractBufferedOutputWriter(OutputStream os, B buffer) {
 		this.os = os;
@@ -59,6 +61,11 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	}
 	
 	@Override
+	public int index() {
+		return flushedIndex + buffer.getIndex();
+	}
+	
+	@Override
 	public void release() {
 		flush();
 		buffer.reset();
@@ -72,6 +79,7 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	protected void flush() {
 		try {
 			os.write(bufferArray, 0, buffer.getIndex());
+			flushedIndex += buffer.getIndex();
 		} 
 		catch (IOException e) {
 			throw new SerializationException(e);
@@ -80,7 +88,6 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	
 	@Override
 	public void writeNull() {
-		int referenceSize = JvmUtil.getReferenceSize();
 		buffer.checkCapacitiyAndHandle(referenceSize);
 		for (int i = 0; i < referenceSize; i++) {
 			buffer.writeByte(SerDeConstants.NULL);
@@ -132,10 +139,9 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	@Override
 	public void write(String value) {
 		if (value == null) {
-			write(SerDeConstants.NULL_STRING_LENGTH);
+			write(SerDeConstants.STRING_NULL);
 		}
 		else {
-			write(SerDeConstants.STRING_DATA_WITHOUT_OPTIMIZATION);
 			int length = value.length();
 			int size = length * JvmUtil.CHAR_SIZE;
 			writeVarInteger(SerDeConstants.STRING_DATA_WITHOUT_OPTIMIZATION, size);
@@ -148,10 +154,9 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	@Override
 	public void writeAscii(String value) {
 		if (value == null) {
-			write(SerDeConstants.NULL_STRING_LENGTH);
+			write(SerDeConstants.STRING_NULL);
 		}
 		else {
-			write(SerDeConstants.STRING_DATA_WITH_OPTIMIZATION);
 			int length = value.length();
 			int size = length * JvmUtil.BYTE_SIZE;
 			writeVarInteger(SerDeConstants.STRING_DATA_WITH_OPTIMIZATION, size);
@@ -263,9 +268,10 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	@Override
 	public void write(byte[] array) {
 		if (array == null) { 
-			write(SerDeConstants.NULL_ARRAY_LENGTH);
+			write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
+			writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
 			for (byte value : array) {
 				write(value);
 			}
@@ -275,9 +281,10 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	@Override
 	public void write(boolean[] array) {
 		if (array == null) { 
-			write(SerDeConstants.NULL_ARRAY_LENGTH);
+			write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
+			writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
 			for (boolean value : array) {
 				write(value);
 			}
@@ -287,9 +294,10 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	@Override
 	public void write(char[] array) {
 		if (array == null) { 
-			write(SerDeConstants.NULL_ARRAY_LENGTH);
+			write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
+			writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
 			for (char value : array) {
 				write(value);
 			}
@@ -299,9 +307,10 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	@Override
 	public void write(short[] array) {
 		if (array == null) { 
-			write(SerDeConstants.NULL_ARRAY_LENGTH);
+			write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
+			writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
 			for (short value : array) {
 				write(value);
 			}
@@ -311,9 +320,10 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	@Override
 	public void write(int[] array) {
 		if (array == null) { 
-			write(SerDeConstants.NULL_ARRAY_LENGTH);
+			write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
+			writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
 			for (int value : array) {
 				write(value);
 			}
@@ -323,9 +333,10 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	@Override
 	public void write(float[] array) {
 		if (array == null) { 
-			write(SerDeConstants.NULL_ARRAY_LENGTH);
+			write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
+			writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
 			for (float value : array) {
 				write(value);
 			}
@@ -335,9 +346,10 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	@Override
 	public void write(long[] array) {
 		if (array == null) { 
-			write(SerDeConstants.NULL_ARRAY_LENGTH);
+			write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
+			writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
 			for (long value : array) {
 				write(value);
 			}
@@ -347,9 +359,10 @@ public abstract class AbstractBufferedOutputWriter<B extends WritableBuffer> imp
 	@Override
 	public void write(double[] array) {
 		if (array == null) { 
-			write(SerDeConstants.NULL_ARRAY_LENGTH);
+			write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
+			writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
 			for (double value : array) {
 				write(value);
 			}

@@ -21,6 +21,8 @@ package tr.com.serkanozal.jiagara.serialize.writer;
  */
 public interface OutputWriter {
 
+	int index();
+	
 	void release();
 	
 	void writeNull();

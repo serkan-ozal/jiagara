@@ -48,13 +48,11 @@ public class DmaBasedPrimitiveBooleanArraySerializer<T> extends AbstractDirectMe
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		boolean[] array = (boolean[])obj;
 		if (array == null) {
-			outputWriter.writeNull();
+			outputWriter.write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
-			long address = JvmUtil.addressOf(array);
-			outputWriter.write(SerDeConstants.OBJECT_DATA);
-			outputWriter.write(array.length); 
-			outputWriter.writeBooleanArray(address);
+			outputWriter.writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
+			outputWriter.writeBooleanArray(JvmUtil.addressOf(array));
 		}
 	}
 

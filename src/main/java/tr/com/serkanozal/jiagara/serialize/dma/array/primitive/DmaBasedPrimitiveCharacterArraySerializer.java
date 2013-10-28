@@ -48,13 +48,11 @@ public class DmaBasedPrimitiveCharacterArraySerializer<T> extends AbstractDirect
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		char[] array = (char[])obj;
 		if (array == null) {
-			outputWriter.writeNull();
+			outputWriter.write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
-			long address = JvmUtil.addressOf(array);
-			outputWriter.write(SerDeConstants.OBJECT_DATA);
-			outputWriter.write(array.length); 
-			outputWriter.writeCharacterArray(address);
+			outputWriter.writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
+			outputWriter.writeCharacterArray(JvmUtil.addressOf(array));
 		}
 	}
 

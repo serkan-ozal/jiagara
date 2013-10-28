@@ -58,10 +58,10 @@ public class DmaBasedObjectFloatArraySerializer<T> extends AbstractDirectMemoryA
 	
 	protected void writeArray(Float[] array, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		if (array == null) {
-			outputWriter.writeNull();
+			outputWriter.write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
-			outputWriter.writeVarInteger(SerDeConstants.OBJECT_DATA, array.length); 
+			outputWriter.writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
 			for (Float o : array) {
 				outputWriter.write(o);
 			}

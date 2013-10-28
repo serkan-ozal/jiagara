@@ -58,10 +58,10 @@ public class DmaBasedObjectCharacterArraySerializer<T> extends AbstractDirectMem
 	
 	protected void writeArray(Character[] array, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		if (array == null) {
-			outputWriter.writeNull();
+			outputWriter.write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
-			outputWriter.writeVarInteger(SerDeConstants.OBJECT_DATA, array.length); 
+			outputWriter.writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
 			for (Character o : array) {
 				outputWriter.write(o);
 			}

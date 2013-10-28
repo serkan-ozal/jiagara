@@ -58,10 +58,10 @@ public class DmaBasedObjectIntegerArraySerializer<T> extends AbstractDirectMemor
 	
 	protected void writeArray(Integer[] array, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		if (array == null) {
-			outputWriter.writeNull();
+			outputWriter.write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
-			outputWriter.writeVarInteger(SerDeConstants.OBJECT_DATA, array.length);  
+			outputWriter.writeVarInteger(SerDeConstants.ARRAY_DATA, array.length);  
 			for (Integer o : array) {
 				outputWriter.write(o);
 			}

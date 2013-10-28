@@ -48,13 +48,11 @@ public class DmaBasedPrimitiveDoubleArraySerializer<T> extends AbstractDirectMem
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		double[] array = (double[])obj;
 		if (array == null) {
-			outputWriter.writeNull();
+			outputWriter.write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
-			long address = JvmUtil.addressOf(array);
-			outputWriter.write(SerDeConstants.OBJECT_DATA);
-			outputWriter.write(array.length); 
-			outputWriter.writeDoubleArray(address);
+			outputWriter.writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
+			outputWriter.writeBooleanArray(JvmUtil.addressOf(array));
 		}
 	}
 

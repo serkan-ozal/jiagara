@@ -68,7 +68,7 @@ public class DmaBasedObjectArraySerializer<T> extends AbstractDirectMemoryAccess
 	public void serializeField(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		Object[] arrayField = (Object[])unsafe.getObject(obj, fieldOffset);
 		if (arrayField == null) {
-			outputWriter.writeNull();
+			outputWriter.write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
 			writeClass(arrayField.getClass(), outputWriter); 
@@ -80,7 +80,7 @@ public class DmaBasedObjectArraySerializer<T> extends AbstractDirectMemoryAccess
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		Object[] o = (Object[])obj;
 		if (o == null) {
-			outputWriter.writeNull();
+			outputWriter.write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
 			objectElementSerializer.serialize(o, outputWriter);

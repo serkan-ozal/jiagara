@@ -60,10 +60,10 @@ public class DmaBasedStringArraySerializer<T> extends AbstractDirectMemoryAccess
 	@SuppressWarnings("unchecked")
 	protected void writeArray(String[] array, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		if (array == null) {
-			outputWriter.writeNull();
+			outputWriter.write(SerDeConstants.ARRAY_NULL);
 		}
 		else {
-			outputWriter.writeVarInteger(SerDeConstants.OBJECT_DATA, array.length); 
+			outputWriter.writeVarInteger(SerDeConstants.ARRAY_DATA, array.length); 
 			for (String o : array) {
 				dmaBasedStringSerializer.serializeDataContent(o, outputWriter);
 			}

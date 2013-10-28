@@ -21,8 +21,6 @@ package tr.com.serkanozal.jiagara.util;
  */
 public interface SerDeConstants {
 
-	int NULL_STRING_LENGTH = 0xFFFFFFFF;
-	int NULL_ARRAY_LENGTH = 0xFFFFFFFF;
 	int NULL_ENUM_ORDINAL = 0xFFFFFFFF;
 	
 	byte NULL = 0x00;
@@ -54,6 +52,7 @@ public interface SerDeConstants {
 	byte STRING_NULL = NULL;
 	byte STRING_DATA_WITHOUT_OPTIMIZATION = 0x01;
 	byte STRING_DATA_WITH_OPTIMIZATION = 0x02;
+	byte STRING_REFERENCE = 0x03;
 	
 	byte SIZE_1_BYTE = 0x00;
 	byte SIZE_2_BYTE = 0x10;

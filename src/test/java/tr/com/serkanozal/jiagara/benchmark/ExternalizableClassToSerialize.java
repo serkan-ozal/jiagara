@@ -222,6 +222,7 @@ public class ExternalizableClassToSerialize extends ClassToSerialize implements 
 			ent.getValue().serialize(out);
 		}
 	}
+	
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		

@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
+import tr.com.serkanozal.jiagara.serialize.data.AbstractDataSerializerFactory;
+import tr.com.serkanozal.jiagara.serialize.data.DataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.array.object.DmaBasedObjectArraySerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.array.object.DmaBasedObjectBooleanArraySerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.array.object.DmaBasedObjectByteArraySerializer;
@@ -61,14 +63,24 @@ import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedClassSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedDateSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedEnumSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedStringSerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOutputWriter;
+import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
 
 /**
  * @author Serkan ÖZAL
  */
-public class DefaultDirectMemoryAccessBasedDataSerializerFactory implements DirectMemoryAccessBasedDataSerializerFactory {
+public class DefaultDirectMemoryAccessBasedDataSerializerFactory 
+		extends AbstractDataSerializerFactory<DirectMemoryAccessBasedOutputWriter> implements DirectMemoryAccessBasedDataSerializerFactory {
 
 	@Override
 	public <T> DirectMemoryAccessBasedDataSerializer<T> createDataSerializer(Class<T> clazz) {
+		DataSerializer<T, OutputWriter> configuredDataSerializer = super.getConfiguredDataSerializer(clazz);
+		if (configuredDataSerializer != null) {
+			return new DirectMemoryAccessBasedDataSerializerDispatcher<T>(configuredDataSerializer);
+		}
+		
+		//////////////////////////////////////////////////////////////////////////////
+		
 		if (clazz.equals(byte.class)) {
 			return new DmaBasedPrimitiveByteSerializer<T>(clazz);
 		}
@@ -182,6 +194,7 @@ public class DefaultDirectMemoryAccessBasedDataSerializerFactory implements Dire
 		}
 		
 		//////////////////////////////////////////////////////////////////////////////
+		
 		else if (clazz.isEnum()) {
 			return new DmaBasedEnumSerializer<T>(clazz);
 		}

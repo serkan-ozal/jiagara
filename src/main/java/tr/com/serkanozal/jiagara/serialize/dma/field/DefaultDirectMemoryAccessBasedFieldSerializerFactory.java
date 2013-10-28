@@ -62,14 +62,26 @@ import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedClassSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedDateSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedEnumSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.specific.DmaBasedStringSerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.writer.DirectMemoryAccessBasedOutputWriter;
+import tr.com.serkanozal.jiagara.serialize.field.AbstractFieldSerializerFactory;
+import tr.com.serkanozal.jiagara.serialize.field.FieldSerializer;
+import tr.com.serkanozal.jiagara.serialize.writer.OutputWriter;
 
 /**
  * @author Serkan ÖZAL
  */
-public class DefaultDirectMemoryAccessBasedFieldSerializerFactory implements DirectMemoryAccessBasedFieldSerializerFactory {
+public class DefaultDirectMemoryAccessBasedFieldSerializerFactory 
+		extends AbstractFieldSerializerFactory<DirectMemoryAccessBasedOutputWriter> implements DirectMemoryAccessBasedFieldSerializerFactory {
 
 	@Override
 	public <T> DirectMemoryAccessBasedFieldSerializer<T> createFieldSerializer(Field field) {
+		FieldSerializer<T, OutputWriter> configuredFieldSerializer = super.getConfiguredFieldSerializer(field);
+		if (configuredFieldSerializer != null) {
+			return new DirectMemoryAccessBasedFieldSerializerDispatcher<T>(configuredFieldSerializer);
+		}
+		
+		//////////////////////////////////////////////////////////////////////////////
+		
 		DirectMemoryAccessBasedFieldSerializer<T> fieldSerializer = null;
 		Class<?> fieldClass = field.getType();
 		
