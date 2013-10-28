@@ -50,11 +50,14 @@ public class DmaBasedCollectionSerializer<T> extends AbstractDirectMemoryAccessB
 		Type genericType = field.getGenericType();
 		if (genericType instanceof ParameterizedType) {
 			ParameterizedType collectionType = (ParameterizedType)genericType;
-			collectionTypeClass = (Class<?>)collectionType.getActualTypeArguments()[0];
-			if (Modifier.isFinal(collectionTypeClass.getModifiers())) {
-				collectionElementSerializer = new KnownAndFinalTypedCollectionElementSerializer();
-			}
-			serializer = serializerService.getSerializer(collectionTypeClass);
+			Type[] types = collectionType.getActualTypeArguments();
+			if (types != null && types.length == 1) {
+				collectionTypeClass = (Class<?>)types[0];
+				if (Modifier.isFinal(collectionTypeClass.getModifiers())) {
+					collectionElementSerializer = new KnownAndFinalTypedCollectionElementSerializer();
+				}
+				serializer = serializerService.getSerializer(collectionTypeClass);
+			}	
 		}	
 		if (collectionElementSerializer == null) {
 			collectionElementSerializer = new UnknownOrNonFinalTypedCollectionElementSerializer();

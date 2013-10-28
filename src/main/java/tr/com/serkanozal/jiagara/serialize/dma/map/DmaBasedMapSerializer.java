@@ -55,18 +55,25 @@ public class DmaBasedMapSerializer<T> extends AbstractDirectMemoryAccessBasedFie
 		Type genericType = field.getGenericType();
 		if (genericType instanceof ParameterizedType) {
 			ParameterizedType mapType = (ParameterizedType)genericType;
-			keyTypeClass = (Class<?>)mapType.getActualTypeArguments()[0];
-			keySerializer = serializerService.getSerializer(keyTypeClass);
-			if (Modifier.isFinal(keyTypeClass.getModifiers())) {
-				keyElementSerializer = new KnownAndFinalTypedMapElementSerializer(keySerializer);
-				useKeyType = true;
-			}
-			valueTypeClass = (Class<?>)mapType.getActualTypeArguments()[1];
-			valueSerializer = serializerService.getSerializer(valueTypeClass);
-			if (Modifier.isFinal(valueTypeClass.getModifiers())) {
-				valueElementSerializer = new KnownAndFinalTypedMapElementSerializer(valueSerializer);
-				useValueType = true;
-			}
+			Type[] types = mapType.getActualTypeArguments();
+			if (types != null) {
+				if (types.length == 1 || types.length == 2) {
+					keyTypeClass = (Class<?>)types[0];
+					keySerializer = serializerService.getSerializer(keyTypeClass);
+					if (Modifier.isFinal(keyTypeClass.getModifiers())) {
+						keyElementSerializer = new KnownAndFinalTypedMapElementSerializer(keySerializer);
+						useKeyType = true;
+					}
+				}	
+				if (types.length == 2) {
+					valueTypeClass = (Class<?>)types[1];
+					valueSerializer = serializerService.getSerializer(valueTypeClass);
+					if (Modifier.isFinal(valueTypeClass.getModifiers())) {
+						valueElementSerializer = new KnownAndFinalTypedMapElementSerializer(valueSerializer);
+						useValueType = true;
+					}
+				}
+			}	
 		}	
 		if (keyElementSerializer == null) {
 			keyElementSerializer = new UnknownOrNonFinalTypedMapElementSerializer(keySerializer, keyTypeClass);
