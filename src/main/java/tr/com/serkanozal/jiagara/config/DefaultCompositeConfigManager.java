@@ -26,7 +26,8 @@ import tr.com.serkanozal.jiagara.config.xml.XmlBasedConfigManager;
 public class DefaultCompositeConfigManager extends CompositeConfigManager {
 
 	public DefaultCompositeConfigManager() {
-		super(	new AnnotationBasedConfigManager(),
+		super(	CustomConfigManager.getInstance(),
+				new AnnotationBasedConfigManager(),
 				new PropertiesBasedConfigManager(),
 				new XmlBasedConfigManager());
 	}
