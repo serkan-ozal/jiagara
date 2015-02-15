@@ -14,26 +14,14 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.benchmark;
+package tr.com.serkanozal.jiagara.benchmark.model;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.Serializable;
 
 /**
  * @author Serkan ÖZAL
  */
-public class ExternalizableAggregatedClassToSerialize extends AggregatedClassToSerialize implements Externalizable {
-	
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException {
-		serialize(out);
-	}
-	
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-		
-	}
-	
+@SuppressWarnings({ "serial" })
+public class SerializableClassToSerialize extends ClassToSerialize implements Serializable {
+
 }

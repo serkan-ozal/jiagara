@@ -24,9 +24,10 @@ import java.util.Map;
  */
 public class SerializationContext {
 
-	private Map<Class<?>, Integer> classCodeMap = new HashMap<Class<?>, Integer>();
-	private Map<Integer, ClassRegistry> registeredClasses = new HashMap<Integer, ClassRegistry>();
+	private Map<Class<?>, Integer> classCodeMap = new HashMap<Class<?>, Integer>(1024);
+	private Map<Integer, ClassRegistry> registeredClasses = new HashMap<Integer, ClassRegistry>(1024);
 	private int lastUsedClassCode = 0;
+	private Map<Integer, Integer> objectAndStreamPositionMap = new HashMap<Integer, Integer>(1024 * 1024);
 	
 	public Map<Integer, ClassRegistry> getRegisteredClasses() {
 		return registeredClasses;
@@ -66,6 +67,14 @@ public class SerializationContext {
 	
 	public Integer getClassCode(Class<?> clazz) {
 		return classCodeMap.get(clazz);
+	}
+	
+	public Map<Integer, Integer> getObjectAndStreamPositionMap() {
+		return objectAndStreamPositionMap;
+	}
+	
+	public void setObjectAndStreamPositionMap(Map<Integer, Integer> objectAndStreamPositionMap) {
+		this.objectAndStreamPositionMap = objectAndStreamPositionMap;
 	}
 	
 }

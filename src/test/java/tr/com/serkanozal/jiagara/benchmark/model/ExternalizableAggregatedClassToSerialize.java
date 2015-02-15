@@ -14,43 +14,26 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.benchmark;
+package tr.com.serkanozal.jiagara.benchmark.model;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
  * @author Serkan ÖZAL
  */
-public enum EnumToSerialize implements Serializable {
-
-	ENUM_1(1, "Enum 1"),
-	ENUM_2(2, "Enum 2"),
-	ENUM_3(3, "Enum 3"),
-	ENUM_4(4, "Enum 4"),
-	ENUM_5(5, "Enum 5"),
-	ENUM_6(6, "Enum 6"),
-	ENUM_7(7, "Enum 7"),
-	ENUM_8(8, "Enum 8"),
-	ENUM_9(9, "Enum 9");
+public class ExternalizableAggregatedClassToSerialize extends AggregatedClassToSerialize implements Externalizable {
 	
-	int code;
-	String text;
-	
-	EnumToSerialize(int code, String text) {
-		this.code = code;
-		this.text = text;
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		serialize(out);
 	}
 	
-	public int getCode() {
-		return code;
-	}
-	
-	public String getText() {
-		return text;
-	}
-	
-	public static EnumToSerialize random() {
-		return values()[(int) (Math.random() * 9)];
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		
 	}
 	
 }

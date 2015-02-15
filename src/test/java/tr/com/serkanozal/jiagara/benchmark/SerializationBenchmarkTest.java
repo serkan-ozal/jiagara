@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +32,9 @@ import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.reflect.ReflectDatumWriter;
 import org.junit.Test;
 
+import tr.com.serkanozal.jiagara.benchmark.model.ClassToSerialize;
+import tr.com.serkanozal.jiagara.benchmark.model.ExternalizableClassToSerialize;
+import tr.com.serkanozal.jiagara.benchmark.model.SerializableClassToSerialize;
 import tr.com.serkanozal.jiagara.service.serialize.SerializerService;
 import tr.com.serkanozal.jiagara.service.serialize.SerializerServiceFactory;
 import tr.com.serkanozal.jiagara.util.JvmUtil;
@@ -43,9 +45,8 @@ import com.esotericsoftware.kryo.io.Output;
 /**
  * @author Serkan ÖZAL
  */
-@SuppressWarnings("serial")
 // -XX:PermSize=512M -XX:MaxPermSize=1G -Xms2G -Xmx4G
-public class SerializationBenchmarkTest implements Serializable {
+public class SerializationBenchmarkTest {
 
 	private static final int PRE_SERIALIZATION_COUNT = 100;
 	private static final int SERIALIZATION_COUNT = 10000;

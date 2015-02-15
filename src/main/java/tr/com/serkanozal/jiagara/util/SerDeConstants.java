@@ -24,16 +24,15 @@ public interface SerDeConstants {
 	int NULL_ENUM_ORDINAL = 0xFFFFFFFF;
 	
 	byte NULL = 0x00;
+	byte REFERENCE = 0x7F;
 	
 	byte OBJECT_NULL = NULL;
 	byte OBJECT_DATA = 0x01;
-	byte OBJECT_REFERENCE = 0x02;
-	byte OBJECT_DATA_WITHOUT_TYPE = 0x03;
+	byte OBJECT_DATA_WITHOUT_TYPE = 0x02;
 	
 	byte ARRAY_NULL = NULL;
 	byte ARRAY_DATA = 0x01;
-	byte ARRAY_REFERENCE = 0x02;
-	byte ARRAY_DATA_WITHOUT_TYPE = 0x03;
+	byte ARRAY_DATA_WITHOUT_TYPE = 0x02;
 	
 	byte CLASS_NAME_WITHOUT_CODE = 0x00;
 	byte CLASS_NAME_WITH_CODE = 0x01;
@@ -52,7 +51,6 @@ public interface SerDeConstants {
 	byte STRING_NULL = NULL;
 	byte STRING_DATA_WITHOUT_OPTIMIZATION = 0x01;
 	byte STRING_DATA_WITH_OPTIMIZATION = 0x02;
-	byte STRING_REFERENCE = 0x03;
 	
 	byte SIZE_1_BYTE = 0x00;
 	byte SIZE_2_BYTE = 0x10;

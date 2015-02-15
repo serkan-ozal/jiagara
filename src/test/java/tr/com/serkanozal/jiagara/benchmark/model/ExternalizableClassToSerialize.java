@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.benchmark;
+package tr.com.serkanozal.jiagara.benchmark.model;
 
 import java.io.Externalizable;
 import java.io.IOException;

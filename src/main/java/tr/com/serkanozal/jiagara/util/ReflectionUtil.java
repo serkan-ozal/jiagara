@@ -50,7 +50,7 @@ public class ReflectionUtil {
 				logger.error("Unable to get field " + fieldName + " from class " + cls.getName(), e);
 			} 
 			catch (NoSuchFieldException e) {
-				logger.warn("Unable to get field " + fieldName + " from class " + cls.getName() + ". " + 
+				logger.debug("Unable to get field " + fieldName + " from class " + cls.getName() + ". " + 
 							 "If there is any super class for class " + cls.getName() + ", it will be tried for getting field ...");
 			}
 			if (field != null) {

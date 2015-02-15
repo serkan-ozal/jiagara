@@ -34,7 +34,8 @@ import tr.com.serkanozal.jiagara.util.SerDeConstants;
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedCollectionSerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
+public class DmaBasedCollectionSerializer<T> 
+		extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 		
 	private static boolean OPTIMIZATION_ENABLED = true;
@@ -83,7 +84,7 @@ public class DmaBasedCollectionSerializer<T> extends AbstractDirectMemoryAccessB
 			collectionElementSerializer.serialize(collectionField, outputWriter);
 		}
 	}
-
+	
 	@Override
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		Collection<?> o = (Collection<?>)obj;
@@ -94,7 +95,7 @@ public class DmaBasedCollectionSerializer<T> extends AbstractDirectMemoryAccessB
 			collectionElementSerializer.serialize(o, outputWriter);
 		}
 	}
-	
+
 	private interface CollectionElementSerializer {
 	
 		void serialize(Collection<?> collection, DirectMemoryAccessBasedOutputWriter outputWriter);

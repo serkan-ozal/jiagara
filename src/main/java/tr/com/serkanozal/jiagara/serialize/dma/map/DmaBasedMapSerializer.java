@@ -34,7 +34,8 @@ import tr.com.serkanozal.jiagara.util.SerDeConstants;
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedMapSerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
+public class DmaBasedMapSerializer<T> 
+		extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 		
 	private SerializerService serializerService = SerializerServiceFactory.getSerializerService();
@@ -121,7 +122,7 @@ public class DmaBasedMapSerializer<T> extends AbstractDirectMemoryAccessBasedFie
 			}
 		}
 	}
-
+	
 	@Override
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		Map<?, ?> o = (Map<?, ?>)obj;

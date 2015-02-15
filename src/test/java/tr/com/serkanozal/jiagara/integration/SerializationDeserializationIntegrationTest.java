@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.benchmark;
+package tr.com.serkanozal.jiagara.integration;
 
-import java.io.Serializable;
+import org.junit.Test;
 
 /**
  * @author Serkan ÖZAL
  */
-@SuppressWarnings({ "serial" })
-public class SerializableClassToSerialize extends ClassToSerialize implements Serializable {
+public class SerializationDeserializationIntegrationTest {
 
+	@Test
+	public void serializeAndDeserializeSuccessfully() {
+		
+	}
+	
 }

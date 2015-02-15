@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.jiagara.benchmark;
+package tr.com.serkanozal.jiagara.benchmark.model;
 
 import java.io.Serializable;
 import java.security.SecureRandom;
@@ -116,6 +116,10 @@ public class ClassToSerialize implements Serializable {
 	protected Map<String, String> stringValueMap = new HashMap<String, String>();
 	protected Map<String, EnumToSerialize> enumValueMap = new HashMap<String, EnumToSerialize>();
 	protected Map<String, AggregatedClassToSerialize> aggregatedClassValueMap = new HashMap<String, AggregatedClassToSerialize>();
+	
+	///////////////////////////////////////////////////////////////////////
+	
+	transient protected ClassToSerialize reference = this;
 	
 	@SuppressWarnings({ "unchecked", "deprecation" })
 	public <T extends ClassToSerialize> T randomize() {

@@ -40,9 +40,9 @@ public class SerializerServiceImpl implements SerializerService {
 	private static final Logger logger = LogUtil.getLogger();
 	
 	private Map<Class<?>, Serializer<?, ? extends OutputWriter>> cachedSerializers = 
-			new HashMap<Class<?>, Serializer<?, ? extends OutputWriter>>();
+			new HashMap<Class<?>, Serializer<?, ? extends OutputWriter>>(1024);
 	private Map<Long, Serializer<?, ? extends OutputWriter>> cachedSerializersByAddress = 
-			new HashMap<Long, Serializer<?, ? extends OutputWriter>>();
+			new HashMap<Long, Serializer<?, ? extends OutputWriter>>(1024);
 	
 	@SuppressWarnings("unchecked")
 	@Override

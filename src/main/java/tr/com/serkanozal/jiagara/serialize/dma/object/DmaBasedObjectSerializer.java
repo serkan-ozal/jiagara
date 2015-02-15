@@ -22,7 +22,7 @@ import java.util.List;
 
 import tr.com.serkanozal.jiagara.exception.SerializationException;
 import tr.com.serkanozal.jiagara.serialize.Serializer;
-import tr.com.serkanozal.jiagara.serialize.dma.AbstractDirectMemoryAccessBasedFieldAndDataSerializer;
+import tr.com.serkanozal.jiagara.serialize.dma.ReferenceAwareDirectMemoryAccessBasedFieldAndDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.data.DirectMemoryAccessBasedDataSerializer;
 import tr.com.serkanozal.jiagara.serialize.dma.field.DefaultDirectMemoryAccessBasedFieldSerializerFactory;
 import tr.com.serkanozal.jiagara.serialize.dma.field.DirectMemoryAccessBasedFieldSerializer;
@@ -38,7 +38,8 @@ import tr.com.serkanozal.jiagara.util.SerDeConstants;
 /**
  * @author Serkan ÖZAL
  */
-public class DmaBasedObjectSerializer<T> extends AbstractDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter> 
+public class DmaBasedObjectSerializer<T> 
+		extends ReferenceAwareDirectMemoryAccessBasedFieldAndDataSerializer<T, DirectMemoryAccessBasedOutputWriter, Object> 
 		implements DirectMemoryAccessBasedFieldSerializer<T>, DirectMemoryAccessBasedDataSerializer<T> {
 		
 	private SerializerService serializerService = SerializerServiceFactory.getSerializerService();
@@ -84,6 +85,7 @@ public class DmaBasedObjectSerializer<T> extends AbstractDirectMemoryAccessBased
 		}
 	}
 	
+	/*
 	@SuppressWarnings("restriction")
 	@Override
 	public void serializeField(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
@@ -95,12 +97,36 @@ public class DmaBasedObjectSerializer<T> extends AbstractDirectMemoryAccessBased
 			objectSerializer.serialize(fieldObj, outputWriter);
 		}	
 	}
+	*/
+	
+	@Override
+	protected void doSerializationOfField(T obj, Object objField, DirectMemoryAccessBasedOutputWriter outputWriter) {
+		objectSerializer.serialize(objField, outputWriter);
+	}
 
+	/*
 	@Override
 	public void serializeDataContent(T obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
 		try {
 			for (FieldSerializer<T, DirectMemoryAccessBasedOutputWriter> fieldSerializer : fieldSerializers) {
 				fieldSerializer.serializeField(obj, outputWriter);
+			}
+		} 
+		catch (SerializationException e) {
+			throw e;
+		}
+		catch (Throwable t) {
+			logger.error("Error occured while serializing data", t);
+			throw new SerializationException("Error occured while serializing data", t);
+		}
+	}
+	*/
+	
+	@SuppressWarnings("unchecked")
+	protected void doSerializationOfDataContent(Object obj, DirectMemoryAccessBasedOutputWriter outputWriter) {
+		try {
+			for (FieldSerializer<T, DirectMemoryAccessBasedOutputWriter> fieldSerializer : fieldSerializers) {
+				fieldSerializer.serializeField((T)obj, outputWriter);
 			}
 		} 
 		catch (SerializationException e) {
